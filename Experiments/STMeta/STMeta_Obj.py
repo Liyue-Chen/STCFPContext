@@ -37,6 +37,7 @@ if terminal_vars['decay_param'] is not None:
 
 yml_files=[terminal_vars['model'], terminal_vars['data']]
 args={}
+args['external_use'] = "weather-holiday-tp"
 for yml_file in yml_files:
     with open(yml_file, 'r') as f:
         args.update(yaml.load(f))
@@ -58,6 +59,10 @@ args['closeness_len'] = int(args['closeness_len'])
 args['period_len'] = int(args['period_len'])
 args['trend_len'] = int(args['trend_len'])
 #####################################################################
+
+if isinstance(args['external_use'],str):
+    args['external_use'] = args['external_use'].split('-')
+print("extern_use",args['external_use'])
 # Generate code_version
 code_version='{}_C{}P{}T{}_G{}_K{}L{}_{}'.format(args['model_version'],
                                                    args['closeness_len'], args['period_len'],
@@ -83,7 +88,8 @@ data_loader = NodeTrafficLoader(dataset=args['dataset'], city=args['city'],
                                 normalize=args['normalize'],
                                 graph=args['graph'],
                                 with_lm=True, with_tpe=True if args['st_method'] == 'gal_gcn' else False,
-                                workday_parser=is_work_day_america if args['dataset'] == 'Bike' else is_work_day_china)
+                                workday_parser=is_work_day_america if args['dataset'] == 'Bike' else is_work_day_china,
+                                external_use=args['external_use'])
 
 
 
