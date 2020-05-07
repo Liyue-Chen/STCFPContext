@@ -1,0 +1,1345 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>6. Results on different datasets &mdash; UCTB  documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="UCTB  documentation" href="../index.html"/>
+        <link rel="next" title="7. About us (UCTB Group)" href="uctb_group.html"/>
+        <link rel="prev" title="5.7. UCTB.utils package" href="../UCTB.utils.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> UCTB
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">2. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">3. Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">4. Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../APIReference.html">5. API Reference</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">6. Results on different datasets</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#stmeta-version">6.1. STMeta Version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#results-on-bike">6.2. Results on Bike</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dataset-statistics">6.2.1. Dataset Statistics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#experiment-results">6.2.2. Experiment Results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#results-on-didi">6.3. Results on DiDi</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">6.3.1. Dataset Statistics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">6.3.2. Experiment Results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#results-on-metro">6.4. Results on Metro</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id3">6.4.1. Dataset Statistics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">6.4.2. Experiment Results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#results-on-charge-station">6.5. Results on Charge-Station</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id5">6.5.1. Dataset Statistics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id6">6.5.2. Experiment Results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#experiment-setting-on-different-datasets">6.6. Experiment Setting on different datasets</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#search-space">6.6.1. Search Space</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id7">6.6.2. Results on Bike</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id8">6.6.2.1. Dataset Statistics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#experiment-setting">6.6.2.2. Experiment Setting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id9">6.6.2.3. Experiment Results</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id10">6.6.3. Results on DiDi</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id11">6.6.3.1. Dataset Statistics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id12">6.6.3.2. Experiment Setting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id13">6.6.3.3. Experiment Results</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id14">6.6.4. Results on Metro</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id15">6.6.4.1. Dataset Statistics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id16">6.6.4.2. Experiment Setting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id17">6.6.4.3. Experiment Results</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id18">6.6.5. Results on Charge-Station</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id19">6.6.5.1. Dataset Statistics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id20">6.6.5.2. Experiment Setting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id21">6.6.5.3. Experiment Results</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="uctb_group.html">7. About us (UCTB Group)</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">UCTB</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>6. Results on different datasets</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/md_file/all_results.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="results-on-different-datasets">
+<h1>6. Results on different datasets<a class="headerlink" href="#results-on-different-datasets" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="stmeta-version">
+<h2>6.1. STMeta Version<a class="headerlink" href="#stmeta-version" title="Permalink to this headline">¶</a></h2>
+<p>As introduced in <a class="reference external" href="./static/current_supported_models.html#stmeta">Currently Supported Models</a>, STMeta is a meta-model that can be implemented by different deep learning techniques based on its applications. Here we realize three versions of STMeta to evaluate its generalizability. The main differences between these three variants are the techniques used in spatio-temporal modeling and aggregation units:</p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th align="center">Version Name</th>
+<th align="center">Spatio-Temporal Unit</th>
+<th align="center">Temporal Aggregation Unit</th>
+<th align="center">Spatial Aggregation Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">STMeta-V1</td>
+<td align="center"><a href="../UCTB.model_unit.html?highlight=gclstmcel#UCTB.model_unit.ST_RNN.GCLSTMCell">GCLSTM</a></td>
+<td align="center"><a href="../UCTB.model_unit.html?highlight=gclstmcel#UCTB.model_unit.GraphModelLayers.GAL">GAL</a></td>
+<td align="center">GAL</td>
+</tr>
+<tr>
+<td align="center">STMeta-V2</td>
+<td align="center">GCLSTM</td>
+<td align="center">Concat &amp; Dense</td>
+<td align="center">GAL</td>
+</tr>
+<tr>
+<td align="center">STMeta-V3</td>
+<td align="center"><a href="../UCTB.model_unit.html?highlight=gclstmcel#UCTB.model_unit.DCRNN_CELL.DCGRUCell">DCGRU</a></td>
+<td align="center">GAL</td>
+<td align="center">GAL</td>
+</tr>
+</tbody>
+</table><p>By default, we use <code class="docutils literal notranslate"><span class="pre">STMeta-V1</span></code> to run LSTM and single graph model tests.</p>
+<p>References:</p>
+<ul class="simple">
+<li><p>GCLSTM (Graph Convolutional Long short-term Memory):
+<a class="reference external" href="https://arxiv.org/pdf/1807.10934">Chai, D., Wang, L., &amp; Yang, Q. (2018, November). Bike flow prediction with multi-graph convolutional networks</a></p></li>
+<li><p>DCGRU (Diffusion Convolutional Gated Recurrent Unit):
+<a class="reference external" href="https://arxiv.org/pdf/1707.01926.pdf">Li, Y., Yu, R., Shahabi, C., &amp; Liu, Y. (2017). Diffusion convolutional recurrent neural network: Data-driven traffic forecasting</a></p></li>
+<li><p>GAL (Graph Attention Layer):
+<a class="reference external" href="https://arxiv.org/pdf/1710.10903.pdf">Veličković, P., Cucurull, G., Casanova, A., Romero, A., Lio, P., &amp; Bengio, Y. (2017). Graph attention networks</a></p></li>
+</ul>
+<p>Our running code and detailed parameter settings can be found in <a class="reference external" href="./all_results.html#experiment-setting-on-different-datasets">Experiment Setting</a>.</p>
+</div>
+<div class="section" id="results-on-bike">
+<h2>6.2. Results on Bike<a class="headerlink" href="#results-on-bike" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="dataset-statistics">
+<h3>6.2.1. Dataset Statistics<a class="headerlink" href="#dataset-statistics" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th align="center">Attributes</th>
+<th align="center"><strong>New York City</strong></th>
+<th align="center"><strong>Chicago</strong></th>
+<th align="center"><strong>DC</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">Time span</td>
+<td align="center">2013.03-2017.09</td>
+<td align="center">2013.07-2017.09</td>
+<td align="center">2013.07-2017.09</td>
+</tr>
+<tr>
+<td align="center">Number of riding records</td>
+<td align="center">49,100,694</td>
+<td align="center">13,130,969</td>
+<td align="center">13,763,675</td>
+</tr>
+<tr>
+<td align="center">Number of stations</td>
+<td align="center">820</td>
+<td align="center">585</td>
+<td align="center">532</td>
+</tr>
+</tbody>
+</table><p>Following shows A map-visualization of bike stations in NYC, Chicago and DC.</p>
+<p><img src="http://47.94.208.154/image/Bike_NYC.jpg" style="zoom:30%;height:800px;width:800px;" /> <img src="http://47.94.208.154/image/Bike_Chicago.jpg" style="zoom:30%;height:800px;width:800px;"/> <img src="http://47.94.208.154/image/Bike_DC.jpg" style="zoom:30%;height:800px;width:800px;" /></p>
+</div>
+<div class="section" id="experiment-results">
+<h3>6.2.2. Experiment Results<a class="headerlink" href="#experiment-results" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center"><strong>NYC</strong></th>
+<th align="center"><strong>Chicago</strong></th>
+<th align="center"><strong>DC</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">HM</td>
+<td align="center">3.99224</td>
+<td align="center">2.97693</td>
+<td align="center">2.63165</td>
+</tr>
+<tr>
+<td align="center">ARIMA(C)</td>
+<td align="center">5.60928</td>
+<td align="center">3.83584</td>
+<td align="center">3.60450</td>
+</tr>
+<tr>
+<td align="center">XGBoost</td>
+<td align="center">4.12407</td>
+<td align="center">2.92569</td>
+<td align="center">2.65671</td>
+</tr>
+<tr>
+<td align="center">GBRT</td>
+<td align="center">3.99907</td>
+<td align="center">2.84257</td>
+<td align="center">2.61768</td>
+</tr>
+<tr>
+<td align="center">ST_MGCN (G/DCI)</td>
+<td align="center">3.72380</td>
+<td align="center">2.88300</td>
+<td align="center">2.48560</td>
+</tr>
+<tr>
+<td align="center">DCRNN(G/D C)</td>
+<td align="center">4.18666</td>
+<td align="center">3.27759</td>
+<td align="center">3.08616</td>
+</tr>
+<tr>
+<td align="center">LSTM (C)</td>
+<td align="center">4.55677</td>
+<td align="center">3.37004</td>
+<td align="center">2.91518</td>
+</tr>
+<tr>
+<td align="center">STMeta-V1</td>
+<td align="center">3.50475</td>
+<td align="center"><strong>2.65511</strong></td>
+<td align="center">2.42582</td>
+</tr>
+<tr>
+<td align="center">STMeta-V2</td>
+<td align="center"><strong>3.43870</strong></td>
+<td align="center">2.66379</td>
+<td align="center">2.41111</td>
+</tr>
+<tr>
+<td align="center">STMeta-V3</td>
+<td align="center">3.47834</td>
+<td align="center">2.66180</td>
+<td align="center"><strong>2.38844</strong></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="section" id="results-on-didi">
+<h2>6.3. Results on DiDi<a class="headerlink" href="#results-on-didi" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>6.3.1. Dataset Statistics<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th align="center">Attributes</th>
+<th align="center"><strong>Xi'an</strong></th>
+<th align="center"><strong>Chengdu</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">Time span</td>
+<td align="center">2016.10-2016.11</td>
+<td align="center">2016.10-2016.11</td>
+</tr>
+<tr>
+<td align="center">Number of riding records</td>
+<td align="center">5,922,961</td>
+<td align="center">8,439,537</td>
+</tr>
+<tr>
+<td align="center">Number of stations</td>
+<td align="center">256</td>
+<td align="center">256</td>
+</tr>
+</tbody>
+</table><p>Following shows A map-visualization of grid-based ride-sharing stations in Xi’an and Chengdu.</p>
+<p><img src="http://47.94.208.154/image/DiDi_Xian.jpg" style="zoom:30%;height:800px;width:800px;" /> <img src="http://47.94.208.154/image/DiDi_Chengdu.jpg" style="zoom:30%;height:800px;width:800px;" /></p>
+</div>
+<div class="section" id="id2">
+<h3>6.3.2. Experiment Results<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center"><strong>Xi’an</strong></th>
+<th align="center"><strong>Chengdu</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">HM</td>
+<td align="center">6.18623</td>
+<td align="center">7.35477</td>
+</tr>
+<tr>
+<td align="center">ARIMA(C)</td>
+<td align="center">9.47478</td>
+<td align="center">12.52656</td>
+</tr>
+<tr>
+<td align="center">XGBoost</td>
+<td align="center">6.73346</td>
+<td align="center">7.73836</td>
+</tr>
+<tr>
+<td align="center">GBRT</td>
+<td align="center">6.44639</td>
+<td align="center">7.58831</td>
+</tr>
+<tr>
+<td align="center">ST-ResNet</td>
+<td align="center">6.08476</td>
+<td align="center">7.14638</td>
+</tr>
+<tr>
+<td align="center">ST_MGCN (G/DCI)</td>
+<td align="center">5.87456</td>
+<td align="center"><strong>7.03217 </strong></td>
+</tr>
+<tr>
+<td align="center">DCRNN(G/D C)</td>
+<td align="center">8.20254</td>
+<td align="center">11.50550</td>
+</tr>
+<tr>
+<td align="center">LSTM (C)</td>
+<td align="center">7.39970</td>
+<td align="center">10.11386</td>
+</tr>
+<tr>
+<td align="center">STMeta-V1 (G/DCI)</td>
+<td align="center">5.89154</td>
+<td align="center">7.06246</td>
+</tr>
+<tr>
+<td align="center">STMeta-V2(G/DCI)</td>
+<td align="center"><strong>5.75596</strong></td>
+<td align="center">7.09710</td>
+</tr>
+<tr>
+<td align="center">STMeta-V3(G/DCI)</td>
+<td align="center">5.95507</td>
+<td align="center">7.04358</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="section" id="results-on-metro">
+<h2>6.4. Results on Metro<a class="headerlink" href="#results-on-metro" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id3">
+<h3>6.4.1. Dataset Statistics<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th align="center">Attributes</th>
+<th align="center"><strong>Chongqing</strong></th>
+<th align="center"><strong>Shanghai</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">Time span</td>
+<td align="center">2016.08-2017.07</td>
+<td align="center">2016.07-2016.09</td>
+</tr>
+<tr>
+<td align="center">Number of riding records</td>
+<td align="center">409,277,117</td>
+<td align="center">333,149,034</td>
+</tr>
+<tr>
+<td align="center">Number of stations</td>
+<td align="center">113</td>
+<td align="center">288</td>
+</tr>
+</tbody>
+</table><p>Following shows A map-visualization of  metro stations in Chongqing and Shanghai.</p>
+<p><img src="http://47.94.208.154/image/Metro_Chongqing.jpg" style="zoom:30%;height:800px;width:800px;" /> <img src="http://47.94.208.154/image/Metro_Shanghai.jpg" style="zoom:30%;height:800px;width:800px;" /></p>
+</div>
+<div class="section" id="id4">
+<h3>6.4.2. Experiment Results<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center"><strong>Chongqing</strong></th>
+<th align="center"><strong>Shanghai</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">HM</td>
+<td align="center">120.30723</td>
+<td align="center">197.97092</td>
+</tr>
+<tr>
+<td align="center">ARIMA(C)</td>
+<td align="center">578.18563</td>
+<td align="center">792.1597</td>
+</tr>
+<tr>
+<td align="center">XGBoost</td>
+<td align="center">117.05069</td>
+<td align="center">185.00447</td>
+</tr>
+<tr>
+<td align="center">GBRT</td>
+<td align="center">113.92276</td>
+<td align="center">186.74502</td>
+</tr>
+<tr>
+<td align="center">ST_MGCN (G/DCI)</td>
+<td align="center">118.86668</td>
+<td align="center">181.55171</td>
+</tr>
+<tr>
+<td align="center">DCRNN(G/D C)</td>
+<td align="center">122.31121</td>
+<td align="center">326.97357</td>
+</tr>
+<tr>
+<td align="center">LSTM (C)</td>
+<td align="center">196.175732</td>
+<td align="center">368.8468</td>
+</tr>
+<tr>
+<td align="center">STMeta-V1 (G/DCI)</td>
+<td align="center"><strong>92.74990</strong></td>
+<td align="center"><strong>151.11746</strong></td>
+</tr>
+<tr>
+<td align="center">STMeta-V2(G/DCI)</td>
+<td align="center">98.86152</td>
+<td align="center">158.21953</td>
+</tr>
+<tr>
+<td align="center">STMeta-V3(G/DCI)</td>
+<td align="center">101.7806</td>
+<td align="center">156.58867</td>
+</tr>
+</tbody>
+</table><p>The period and trend features are more obvious in Metro dataset, so the performance is poor if only use closeness feature.</p>
+</div>
+</div>
+<div class="section" id="results-on-charge-station">
+<h2>6.5. Results on Charge-Station<a class="headerlink" href="#results-on-charge-station" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id5">
+<h3>6.5.1. Dataset Statistics<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th align="center">Attributes</th>
+<th align="center"><strong>Beijing</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">Time span</td>
+<td align="center">2018.03-2018.08</td>
+</tr>
+<tr>
+<td align="center">Number of riding records</td>
+<td align="center">1,272,961</td>
+</tr>
+<tr>
+<td align="center">Number of stations</td>
+<td align="center">629</td>
+</tr>
+</tbody>
+</table><p>Following shows a map-visualization of  629 EV charging stations in Beijing.</p>
+<img src="http://47.94.208.154/image/EV_Beijing.jpg" style="zoom:40%;height:800px;width:800px;" /></div>
+<div class="section" id="id6">
+<h3>6.5.2. Experiment Results<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center"><strong>Beijing</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">HM</td>
+<td align="center">1.01610</td>
+</tr>
+<tr>
+<td align="center">ARIMA(C)</td>
+<td align="center">0.98236</td>
+</tr>
+<tr>
+<td align="center">XGBoost</td>
+<td align="center">0.83381</td>
+</tr>
+<tr>
+<td align="center">GBRT</td>
+<td align="center">0.82814</td>
+</tr>
+<tr>
+<td align="center">ST_MGCN (G/DC)</td>
+<td align="center">0.82714</td>
+</tr>
+<tr>
+<td align="center">DCRNN(G/D C)</td>
+<td align="center">0.98871</td>
+</tr>
+<tr>
+<td align="center">LSTM (C)</td>
+<td align="center">1.58560</td>
+</tr>
+<tr>
+<td align="center">STMeta-V1 (G/DC)</td>
+<td align="center">0.815518</td>
+</tr>
+<tr>
+<td align="center">STMeta-V2(G/DC)</td>
+<td align="center">0.82144</td>
+</tr>
+<tr>
+<td align="center">STMeta-V3(G/DC)</td>
+<td align="center"><strong>0.81541</strong></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="section" id="experiment-setting-on-different-datasets">
+<h2>6.6. Experiment Setting on different datasets<a class="headerlink" href="#experiment-setting-on-different-datasets" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="search-space">
+<h3>6.6.1. Search Space<a class="headerlink" href="#search-space" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th align="center">Model</th>
+<th align="center">Search Space</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">HM</td>
+<td align="center"><code>CT: 0~6</code>, <code>PT: 0~7</code>, <code>TT: 0~4</code></td>
+</tr>
+<tr>
+<td align="center">ARIMA</td>
+<td align="center"><code>CT:168</code>,<code>p:3</code>, <code>d:0</code>, <code>q:0</code></td>
+</tr>
+<tr>
+<td align="center">XGBoost</td>
+<td align="center"><code>CT: 0~12</code>, <code>PT: 0~14</code>, <code>TT: 0~4</code>, <code>estimater: 10~200</code>, <code>depth: 2~10</code></td>
+</tr>
+<tr>
+<td align="center">GBRT</td>
+<td align="center"><code>CT: 0~12</code>, <code>PT: 0~14</code>, <code>TT: 0~4</code>, <code>estimater: 10~200</code>, <code>depth: 2~10</code></td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="id7">
+<h3>6.6.2. Results on Bike<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id8">
+<h4>6.6.2.1. Dataset Statistics<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th align="center">Attributes</th>
+<th align="center"><strong>New York City</strong></th>
+<th align="center"><strong>Chicago</strong></th>
+<th align="center"><strong>DC</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">Time span</td>
+<td align="center">2013.03-2017.09</td>
+<td align="center">2013.07-2017.09</td>
+<td align="center">2013.07-2017.09</td>
+</tr>
+<tr>
+<td align="center">Number of riding records</td>
+<td align="center">49,100,694</td>
+<td align="center">13,130,969</td>
+<td align="center">13,763,675</td>
+</tr>
+<tr>
+<td align="center">Number of stations</td>
+<td align="center">820</td>
+<td align="center">585</td>
+<td align="center">532</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="experiment-setting">
+<h4>6.6.2.2. Experiment Setting<a class="headerlink" href="#experiment-setting" title="Permalink to this headline">¶</a></h4>
+<ul>
+<li><p><a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/ST_MGCN/bike_trial.py">ST_MGCN</a> Run Code &amp; Setting.</p></li>
+<li><p><a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/DCRNN/bike_trial.py">DCRNN</a> Run Code &amp; Setting.</p></li>
+<li><p>LSTM (C) &amp; STMeta-V1  &amp; STMeta-V2  &amp; STMeta-V3</p>
+<p>All four models can be run by specifying data files and model files on  <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/STMeta_Obj.py">STMeta_Obj.py</a>.</p>
+<p>Data Files: <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/bike_nyc.data.yml">bike_nyc.data.yml</a> , <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/bike_chicago.data.yml">bike_chicago.data.yml</a>, <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/bike_dc.data.yml">bike_dc.data.yml</a>.</p>
+<ul>
+<li><p>LSTM (C)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v0.model.yml -d bike_nyc.data.yml&#39;</span>
+          <span class="s1">&#39; -p graph:Distance,period_len:0,trend_len:0,mark:LSTMC&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v0.model.yml -d bike_chicago.data.yml&#39;</span>
+          <span class="s1">&#39; -p graph:Distance,period_len:0,trend_len:0,mark:LSTMC&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v0.model.yml -d bike_dc.data.yml&#39;</span>
+          <span class="s1">&#39; -p graph:Distance,period_len:0,trend_len:0,mark:LSTMC&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Model Files: <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/STMeta_v0.model.yml">STMeta_v0.model.yml</a>.</p>
+</li>
+<li><p>STMeta-V1</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_nyc.data.yml &#39;</span>
+          <span class="s1">&#39;-p graph:Distance-Correlation-Interaction&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_chicago.data.yml &#39;</span>
+          <span class="s1">&#39;-p graph:Distance-Correlation-Interaction&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_dc.data.yml &#39;</span>
+          <span class="s1">&#39;-p graph:Distance-Correlation-Interaction&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Model Files: <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/STMeta_v1.model.yml">STMeta_v1.model.yml</a>.</p>
+</li>
+<li><p>STMeta-V2</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v2.model.yml -d bike_nyc.data.yml &#39;</span>
+          <span class="s1">&#39;-p graph:Distance-Correlation-Interaction&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v2.model.yml -d bike_chicago.data.yml &#39;</span>
+          <span class="s1">&#39;-p graph:Distance-Correlation-Interaction&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v2.model.yml -d bike_dc.data.yml &#39;</span>
+          <span class="s1">&#39;-p graph:Distance-Correlation-Interaction&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Model Files: <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/STMeta_v2.model.yml">STMeta_v2.model.yml</a>.</p>
+</li>
+<li><p>STMeta-V3</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v3.model.yml -d bike_nyc.data.yml &#39;</span>
+          <span class="s1">&#39;-p graph:Distance-Correlation-Interaction&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v3.model.yml -d bike_chicago.data.yml &#39;</span>
+          <span class="s1">&#39;-p graph:Distance-Correlation-Interaction&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v3.model.yml -d bike_dc.data.yml &#39;</span>
+          <span class="s1">&#39;-p graph:Distance-Correlation-Interaction&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Model Files: <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/STMeta_v3.model.yml">STMeta_v3.model.yml</a>.</p>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="id9">
+<h4>6.6.2.3. Experiment Results<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center"><strong>NYC</strong></th>
+<th align="center"><strong>Chicago</strong></th>
+<th align="center"><strong>DC</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">HM</td>
+<td align="center">3.99224 <code>1-1-3</code></td>
+<td align="center">2.97693 <code>1-1-2</code></td>
+<td align="center">2.63165 <code>2-1-3</code></td>
+</tr>
+<tr>
+<td align="center">ARIMA(C)</td>
+<td align="center">5.60928 <code>168-3-0-0</code></td>
+<td align="center">3.83584 <code>168-3-0-0</code></td>
+<td align="center">3.60450 <code>168-3-0-0</code></td>
+</tr>
+<tr>
+<td align="center">XGBoost</td>
+<td align="center">4.12407 <code>12-10-0-20-5</code></td>
+<td align="center">2.92569 <code>9-7-0-20-5</code></td>
+<td align="center">2.65671 <code>12-14-2-20-5</code></td>
+</tr>
+<tr>
+<td align="center">GBRT</td>
+<td align="center">3.99907 <code>12-7-4-100-5</code></td>
+<td align="center">2.84257 <code>12-14-2-100-5</code></td>
+<td align="center">2.61768 <code>12-14-2-100-5</code></td>
+</tr>
+<tr>
+<td align="center">ST_MGCN (G/DCI)</td>
+<td align="center">3.72380</td>
+<td align="center">2.88300</td>
+<td align="center">2.48560</td>
+</tr>
+<tr>
+<td align="center">DCRNN(G/D C)</td>
+<td align="center">4.18666</td>
+<td align="center">3.27759</td>
+<td align="center">3.08616</td>
+</tr>
+<tr>
+<td align="center">LSTM (C)</td>
+<td align="center">4.55677</td>
+<td align="center">3.37004</td>
+<td align="center">2.91518</td>
+</tr>
+<tr>
+<td align="center">STMeta-V1</td>
+<td align="center">3.50475</td>
+<td align="center"><strong>2.65511</strong></td>
+<td align="center">2.42582</td>
+</tr>
+<tr>
+<td align="center">STMeta-V2</td>
+<td align="center"><strong>3.43870</strong></td>
+<td align="center">2.66379</td>
+<td align="center">2.41111</td>
+</tr>
+<tr>
+<td align="center">STMeta-V3</td>
+<td align="center">3.47834</td>
+<td align="center">2.66180</td>
+<td align="center"><strong>2.38844</strong></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="section" id="id10">
+<h3>6.6.3. Results on DiDi<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id11">
+<h4>6.6.3.1. Dataset Statistics<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th align="center">Attributes</th>
+<th align="center"><strong>Xi'an</strong></th>
+<th align="center"><strong>Chengdu</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">Time span</td>
+<td align="center">2016.10-2016.11</td>
+<td align="center">2016.10-2016.11</td>
+</tr>
+<tr>
+<td align="center">Number of riding records</td>
+<td align="center">5,922,961</td>
+<td align="center">8,439,537</td>
+</tr>
+<tr>
+<td align="center">Number of stations</td>
+<td align="center">256</td>
+<td align="center">256</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="id12">
+<h4>6.6.3.2. Experiment Setting<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><p>ST-ResNet</p></li>
+</ul>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th align="center">ST-ResNet Search Space</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>residual_units:2~6</code>,  <code>conv_filter:[32, 64, 128]</code>,  <code>kernal_size:3~5</code>, <br /><code>lr:[0.0001, 0.00002, 0.00004, 0.00008, 0.00001]</code>, <code>batch_size:[32, 64, 128, 256]</code></td>
+</tr>
+</tbody>
+</table><p>The best parameters found are following.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">args</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="s1">&#39;dataset&#39;</span><span class="p">:</span> <span class="s1">&#39;DiDi&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;city&#39;</span><span class="p">:</span> <span class="s1">&#39;Chengdu&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;num_residual_unit&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+  <span class="s1">&#39;conv_filters&#39;</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span>
+  <span class="s1">&#39;kernel_size&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+  <span class="s1">&#39;lr&#39;</span><span class="p">:</span> <span class="mf">1e-5</span><span class="p">,</span>
+  <span class="s1">&#39;batch_size&#39;</span><span class="p">:</span> <span class="mi">32</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>We can modify <code class="docutils literal notranslate"><span class="pre">city</span></code> parameter to <code class="docutils literal notranslate"><span class="pre">Chengdu</span></code> or <code class="docutils literal notranslate"><span class="pre">Xian</span></code> in <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/ST_ResNet/ST_ResNet.py">ST_ResNet.py</a> , and then run it.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span> python ST_ResNet.py 
+</pre></div>
+</div>
+<ul>
+<li><p><a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/ST_MGCN/didi_trial.py">ST_MGCN</a> Run Code &amp; Setting.</p></li>
+<li><p><a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/DCRNN/didi_trial.py">DCRNN</a> Run Code &amp; Setting.</p></li>
+<li><p>LSTM (C) &amp; STMeta-V1  &amp; STMeta-V2  &amp; STMeta-V3</p>
+<p>All four models can be run by specifying data files and model files on <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/STMeta_Obj.py">STMeta_Obj.py</a>.</p>
+<p>Data Files: <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/didi_xian.data.yml">didi_xian.data.yml</a> , <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/didi_chengdu.data.yml">didi_chengdu.data.yml</a>.</p>
+<ul>
+<li><p>LSTM (C)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v0.model.yml -d didi_xian.data.yml&#39;</span>
+          <span class="s1">&#39; -p graph:Distance,period_len:0,trend_len:0,mark:LSTMC&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v0.model.yml -d didi_chengdu.data.yml&#39;</span>
+          <span class="s1">&#39; -p graph:Distance,period_len:0,trend_len:0,mark:LSTMC&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Model Files: <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/STMeta_v0.model.yml">STMeta_v0.model.yml</a>.</p>
+</li>
+<li><p>STMeta-V1</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v1.model.yml -d didi_xian.data.yml &#39;</span>
+          <span class="s1">&#39;-p graph:Distance-Correlation-Interaction&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v1.model.yml -d didi_chengdu.data.yml &#39;</span>
+          <span class="s1">&#39;-p graph:Distance-Correlation-Interaction&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Model Files: <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/STMeta_v1.model.yml">STMeta_v1.model.yml</a>.</p>
+</li>
+<li><p>STMeta-V2</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v2.model.yml -d didi_xian.data.yml &#39;</span>
+            <span class="s1">&#39;-p graph:Distance-Correlation-Interaction&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v2.model.yml -d didi_chengdu.data.yml &#39;</span>
+            <span class="s1">&#39;-p graph:Distance-Correlation-Interaction&#39;</span><span class="p">)</span>   
+</pre></div>
+</div>
+<p>Model Files: <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/STMeta_v2.model.yml">STMeta_v2.model.yml</a>.</p>
+</li>
+<li><p>STMeta-V3</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v3.model.yml -d didi_xian.data.yml &#39;</span>
+          <span class="s1">&#39;-p graph:Distance-Correlation-Interaction&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v3.model.yml -d didi_chengdu.data.yml &#39;</span>
+          <span class="s1">&#39;-p graph:Distance-Correlation-Interaction&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Model Files: <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/STMeta_v3.model.yml">STMeta_v3.model.yml</a>.</p>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="id13">
+<h4>6.6.3.3. Experiment Results<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center"><strong>Xi’an</strong></th>
+<th align="center"><strong>Chengdu</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">HM</td>
+<td align="center">6.18623 <code>1-1-2</code></td>
+<td align="center">7.35477 <code>0-1-4</code></td>
+</tr>
+<tr>
+<td align="center">ARIMA(C)</td>
+<td align="center">9.47478 <code>168-3-0-0</code></td>
+<td align="center">12.52656 <code>168-3-0-0</code></td>
+</tr>
+<tr>
+<td align="center">XGBoost</td>
+<td align="center">6.73346 <code>12-0-2-10-5</code></td>
+<td align="center">7.73836<code>9-14-4-20-2</code></td>
+</tr>
+<tr>
+<td align="center">GBRT</td>
+<td align="center">6.44639 <code>9-0-2-50-2</code></td>
+<td align="center">7.58831 <code>12-7-2-50-5</code></td>
+</tr>
+<tr>
+<td align="center">ST-ResNet</td>
+<td align="center">6.08476</td>
+<td align="center">7.14638</td>
+</tr>
+<tr>
+<td align="center">ST_MGCN (G/DCI)</td>
+<td align="center">5.87456</td>
+<td align="center"><strong>7.03217</strong></td>
+</tr>
+<tr>
+<td align="center">DCRNN(G/D C)</td>
+<td align="center">8.20254</td>
+<td align="center">11.50550</td>
+</tr>
+<tr>
+<td align="center">LSTM (C)</td>
+<td align="center">7.39970</td>
+<td align="center">10.11386</td>
+</tr>
+<tr>
+<td align="center">STMeta-V1 (G/DCI)</td>
+<td align="center">5.89154</td>
+<td align="center">7.06246</td>
+</tr>
+<tr>
+<td align="center">STMeta-V2(G/DCI)</td>
+<td align="center"><strong>5.75596</strong></td>
+<td align="center">7.09710</td>
+</tr>
+<tr>
+<td align="center">STMeta-V3(G/DCI)</td>
+<td align="center">5.95507</td>
+<td align="center">7.04358</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="section" id="id14">
+<h3>6.6.4. Results on Metro<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id15">
+<h4>6.6.4.1. Dataset Statistics<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th align="center">Attributes</th>
+<th align="center"><strong>Chongqing</strong></th>
+<th align="center"><strong>Shanghai</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">Time span</td>
+<td align="center">2016.08-2017.07</td>
+<td align="center">2016.07-2016.09</td>
+</tr>
+<tr>
+<td align="center">Number of riding records</td>
+<td align="center">409,277,117</td>
+<td align="center">333,149,034</td>
+</tr>
+<tr>
+<td align="center">Number of stations</td>
+<td align="center">113</td>
+<td align="center">288</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="id16">
+<h4>6.6.4.2. Experiment Setting<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h4>
+<ul>
+<li><p><a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/ST_MGCN/metro_trial.py">ST_MGCN</a> Run Code &amp; Setting.</p></li>
+<li><p><a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/DCRNN/metro_trial.py">DCRNN</a> Run Code &amp; Setting.</p></li>
+<li><p>LSTM (C) &amp; STMeta-V1  &amp; STMeta-V2  &amp; STMeta-V3</p>
+<p>All four models can be run by specifying data files and model files on <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/STMeta_Obj.py">STMeta_Obj.py</a>.</p>
+<p>Data Files: <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/metro_chongqing.data.yml">metro_chongqing.data.yml</a> , <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/metro_shanghai.data.yml">metro_shanghai.data.yml</a>.</p>
+<ul>
+<li><p>LSTM (C)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v0.model.yml -d metro_chongqing.data.yml&#39;</span>
+            <span class="s1">&#39; -p graph:Distance,period_len:0,trend_len:0,mark:LSTMC&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v0.model.yml -d metro_shanghai.data.yml&#39;</span>
+            <span class="s1">&#39; -p graph:Distance,period_len:0,trend_len:0,mark:LSTMC&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Model Files: <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/STMeta_v0.model.yml">STMeta_v0.model.yml</a>.</p>
+</li>
+<li><p>STMeta-V1</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v1.model.yml -d metro_chongqing.data.yml &#39;</span>
+            <span class="s1">&#39;-p graph:Distance-Correlation-Line&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v1.model.yml -d metro_shanghai.data.yml &#39;</span>
+              <span class="s1">&#39;-p graph:Distance-Correlation-Line&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Model Files: <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/STMeta_v1.model.yml">STMeta_v1.model.yml</a>.</p>
+</li>
+<li><p>STMeta-V2</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v2.model.yml -d metro_chongqing.data.yml &#39;</span>
+          <span class="s1">&#39;-p graph:Distance-Correlation-Line&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v2.model.yml -d metro_shanghai.data.yml &#39;</span>
+        <span class="s1">&#39;-p graph:Distance-Correlation-Line&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Model Files: <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/STMeta_v2.model.yml">STMeta_v2.model.yml</a>.</p>
+</li>
+<li><p>STMeta-V3</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v3.model.yml -d metro_chongqing.data.yml &#39;</span>
+        <span class="s1">&#39;-p graph:Distance-Correlation-Line&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v3.model.yml -d metro_shanghai.data.yml &#39;</span>
+            <span class="s1">&#39;-p graph:Distance-Correlation-Line&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Model Files: <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/STMeta_v3.model.yml">STMeta_v3.model.yml</a>.</p>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="id17">
+<h4>6.6.4.3. Experiment Results<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center"><strong>Chongqing</strong></th>
+<th align="center"><strong>Shanghai</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">HM</td>
+<td align="center">120.30723 <code>0-1-4</code></td>
+<td align="center">197.97092 <code>0-1-4</code></td>
+</tr>
+<tr>
+<td align="center">ARIMA(C)</td>
+<td align="center">578.18563 <code>168-3-0-0</code></td>
+<td align="center">792.1597 <code>168-3-0-0</code></td>
+</tr>
+<tr>
+<td align="center">XGBoost</td>
+<td align="center">117.05069 <code>9-14-2-200-5</code></td>
+<td align="center">185.00447<code>3-7-0-50-5</code></td>
+</tr>
+<tr>
+<td align="center">GBRT</td>
+<td align="center">113.92276 1<code>2-10-4-200-5</code></td>
+<td align="center">186.74502 <code>12-10-0-100-2</code></td>
+</tr>
+<tr>
+<td align="center">ST_MGCN (G/DCI)</td>
+<td align="center">118.86668</td>
+<td align="center">181.55171</td>
+</tr>
+<tr>
+<td align="center">DCRNN(G/D C)</td>
+<td align="center">122.31121</td>
+<td align="center">326.97357</td>
+</tr>
+<tr>
+<td align="center">LSTM (C)</td>
+<td align="center">196.175732</td>
+<td align="center">368.8468</td>
+</tr>
+<tr>
+<td align="center">STMeta-V1 (G/DCI)</td>
+<td align="center"><strong>92.74990</strong></td>
+<td align="center"><strong>151.11746</strong></td>
+</tr>
+<tr>
+<td align="center">STMeta-V2(G/DCI)</td>
+<td align="center">98.86152</td>
+<td align="center">158.21953</td>
+</tr>
+<tr>
+<td align="center">STMeta-V3(G/DCI)</td>
+<td align="center">101.7806</td>
+<td align="center">156.58867</td>
+</tr>
+</tbody>
+</table><p>The period and trend features are more obvious in Metro dataset, so the performance is poor if only use closeness feature.</p>
+</div>
+</div>
+<div class="section" id="id18">
+<h3>6.6.5. Results on Charge-Station<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id19">
+<h4>6.6.5.1. Dataset Statistics<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th align="center">Attributes</th>
+<th align="center"><strong>Beijing</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">Time span</td>
+<td align="center">2018.03-2018.08</td>
+</tr>
+<tr>
+<td align="center">Number of riding records</td>
+<td align="center">1,272,961</td>
+</tr>
+<tr>
+<td align="center">Number of stations</td>
+<td align="center">629</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="id20">
+<h4>6.6.5.2. Experiment Setting<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h4>
+<ul>
+<li><p><a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/ST_MGCN/cs_trial.py">ST_MGCN</a> Run Code &amp; Setting.</p></li>
+<li><p><a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/DCRNN/cs_trial.py">DCRNN</a> Run Code &amp; Setting.</p></li>
+<li><p>LSTM (C) &amp; STMeta-V1  &amp; STMeta-V2  &amp; STMeta-V3</p>
+<p>All four models can be run by specifying data files and model files on <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/STMeta_Obj.py">STMeta_Obj.py</a>.</p>
+<p>Data Files: <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/chargestation_beijing.data.yml">chargestation_beijing.data.yml</a>.</p>
+<ul>
+<li><p>LSTM (C)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v0.model.yml -d chargestation_beijing.data.yml -p graph:Distance,period_len:0,trend_len:0,mark:LSTMC&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Model Files: <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/STMeta_v0.model.yml">STMeta_v0.model.yml</a>.</p>
+</li>
+<li><p>STMeta-V1</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v1.model.yml&#39;</span>
+          <span class="s1">&#39; -d chargestation_beijing.data.yml -p graph:Distance-Correlation&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Model Files: <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/STMeta_v1.model.yml">STMeta_v1.model.yml</a>.</p>
+</li>
+<li><p>STMeta-V2</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v2.model.yml&#39;</span>
+            <span class="s1">&#39; -d chargestation_beijing.data.yml -p graph:Distance-Correlation&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Model Files: <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/STMeta_v2.model.yml">STMeta_v2.model.yml</a>.</p>
+</li>
+<li><p>STMeta-V3</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python STMeta_Obj.py -m STMeta_v3.model.yml&#39;</span>
+            <span class="s1">&#39; -d chargestation_beijing.data.yml -p graph:Distance-Correlation&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Model Files: <a class="reference external" href="https://github.com/Di-Chai/UCTB/blob/master/Experiments/STMeta/STMeta_v3.model.yml">STMeta_v3.model.yml</a>.</p>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="id21">
+<h4>6.6.5.3. Experiment Results<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center"><strong>Beijing</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">HM</td>
+<td align="center">1.01610 <code>2-0-2</code></td>
+</tr>
+<tr>
+<td align="center">ARIMA(C)</td>
+<td align="center">0.98236 <code>168-3-0-0</code></td>
+</tr>
+<tr>
+<td align="center">XGBoost</td>
+<td align="center">0.83381 <code>12-7-0-20-2</code></td>
+</tr>
+<tr>
+<td align="center">GBRT</td>
+<td align="center">0.82814 <code>12-10-0-100-2</code></td>
+</tr>
+<tr>
+<td align="center">ST_MGCN (G/DC)</td>
+<td align="center">0.82714</td>
+</tr>
+<tr>
+<td align="center">DCRNN(G/D C)</td>
+<td align="center">0.98871</td>
+</tr>
+<tr>
+<td align="center">LSTM (C)</td>
+<td align="center">1.58560</td>
+</tr>
+<tr>
+<td align="center">STMeta-V1 (G/DC)</td>
+<td align="center">0.815518</td>
+</tr>
+<tr>
+<td align="center">STMeta-V2(G/DC)</td>
+<td align="center">0.82144</td>
+</tr>
+<tr>
+<td align="center">STMeta-V3(G/DC)</td>
+<td align="center"><strong>0.81541</strong></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="uctb_group.html" class="btn btn-neutral float-right" title="7. About us (UCTB Group)" accesskey="n">Next →</a>
+      
+      
+        <a href="../UCTB.utils.html" class="btn btn-neutral" title="5.7. UCTB.utils package" accesskey="p">← Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, UCTB group.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE: 'true'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/language_data.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
