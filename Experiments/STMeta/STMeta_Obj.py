@@ -4,6 +4,9 @@ import yaml
 import argparse
 import GPUtil
 import pickle
+import random
+import numpy as np
+import tensorflow as tf
 
 from UCTB.dataset import NodeTrafficLoader
 from UCTB.model import STMeta
@@ -12,15 +15,17 @@ from UCTB.evaluation import metric
 from UCTB.preprocess.time_utils import is_work_day_china, is_work_day_america
 from UCTB.preprocess import SplitData
 import sys
-sys.path.append("../")
 
-#from RoadDataLoader import RoadDataLoader
 from sendInfo import *
-#####################################################################
+
 # argument parser
+seed = 3141592
+random.seed(seed)
+os.environ['PYTHONHASHSEED'] = str(seed)
+np.random.seed(seed)
+tf.set_random_seed(seed)
+
 parser = argparse.ArgumentParser(description="Argument Parser")
-
-
 parser.add_argument('-l', '--decay_param', default = None)
 
 parser.add_argument('-m', '--model', default = 'STMeta_v1.model.yml')
@@ -63,6 +68,8 @@ args['trend_len'] = int(args['trend_len'])
 if isinstance(args['external_use'],str):
     args['external_use'] = args['external_use'].split('-')
 print("extern_use",args['external_use'])
+
+
 # Generate code_version
 code_version='{}_C{}P{}T{}_G{}_K{}L{}_{}'.format(args['model_version'],
                                                    args['closeness_len'], args['period_len'],
@@ -90,7 +97,6 @@ data_loader = NodeTrafficLoader(dataset=args['dataset'], city=args['city'],
                                 with_lm=True, with_tpe=True if args['st_method'] == 'gal_gcn' else False,
                                 workday_parser=is_work_day_america if args['dataset'] == 'Bike' else is_work_day_china,
                                 external_use=args['external_use'])
-
 
 
 # split data
@@ -178,8 +184,6 @@ if args['train']:
                           save_model=True)
 
 STMeta_obj.load(code_version)
-
-
 
 
 prediction = STMeta_obj.predict(closeness_feature=data_loader.test_closeness,
