@@ -1,5 +1,4 @@
 import os
-import nni
 import yaml
 import argparse
 import GPUtil
@@ -16,7 +15,7 @@ from UCTB.preprocess.time_utils import is_work_day_china, is_work_day_america
 from UCTB.preprocess import SplitData
 import sys
 
-from sendInfo import *
+#from sendInfo import *
 
 # argument parser
 seed = 3141592
@@ -43,6 +42,7 @@ if terminal_vars['decay_param'] is not None:
 yml_files=[terminal_vars['model'], terminal_vars['data']]
 args={}
 args['external_use'] = "weather-holiday-tp"
+args['MergeIndex'] = 1
 for yml_file in yml_files:
     with open(yml_file, 'r') as f:
         args.update(yaml.load(f))
@@ -53,11 +53,6 @@ if len(terminal_vars['update_params']) > 0:
     print({e.split(':')[0]: e.split(':')[1]
           for e in terminal_vars['update_params'].split(',')})
 
-nni_params=nni.get_next_parameter()
-nni_sid=nni.get_sequence_id()
-if nni_params:
-    args.update(nni_params)
-    args['mark'] += str(nni_sid)
 
 # to make sure its type is int
 args['closeness_len'] = int(args['closeness_len'])
@@ -96,7 +91,9 @@ data_loader = NodeTrafficLoader(dataset=args['dataset'], city=args['city'],
                                 graph=args['graph'],
                                 with_lm=True, with_tpe=True if args['st_method'] == 'gal_gcn' else False,
                                 workday_parser=is_work_day_america if args['dataset'] == 'Bike' else is_work_day_china,
-                                external_use=args['external_use'])
+                                external_use=args['external_use'],
+                                MergeIndex=args['MergeIndex'],
+                                MergeWay="max" if args["dataset"] == "ChargeStation" else "sum")
 
 
 # split data
@@ -115,10 +112,7 @@ deviceIDs = GPUtil.getAvailable(order='load', limit=2, maxLoad=1, maxMemory=0.7,
 if len(deviceIDs) == 0:
     current_device = '-1'
 else:
-    if nni_params:
-        current_device = str(deviceIDs[int(nni_sid) % len(deviceIDs)])
-    else:
-        current_device = str(deviceIDs[0])
+    current_device = str(deviceIDs[0])
 
 
 STMeta_obj = STMeta(num_node=data_loader.station_number,
@@ -160,6 +154,7 @@ STMeta_obj.build()
 print(args['dataset'], code_version)
 print('Number of trainable variables', STMeta_obj.trainable_vars)
 print('Number of training samples', data_loader.train_sequence_len)
+print("Traffic shape is",data_loader.traffic_data.shape)
 print("External dimension is ",data_loader.external_dim)
 
 # # Training
@@ -246,8 +241,3 @@ print('Converged using %.2f hour / %s epochs' % (time_consumption, STMeta_obj._g
 with open("{}_{}.pkl".format(args['city'],code_version),"wb") as fp:
     pickle.dump(test_prediction,fp)
 
-if nni_params:
-    nni.report_final_result({
-        'default': val_rmse,
-        'test-rmse': test_rmse,
-    })

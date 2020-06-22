@@ -2,6 +2,7 @@ import os
 import copy
 import datetime
 import numpy as np
+import pandas as pd
 
 from dateutil.parser import parse
 from sklearn.metrics.pairwise import cosine_similarity
@@ -129,16 +130,17 @@ class NodeTrafficLoader(object):
         # weather feature
         if len(self.dataset.external_feature_weather) > 0 and "weather" in external_use:
             print("**** Using Weather feature ****")
-            # orignal weather is 60 mins
-            #self.dataset.time_fitness /
             external_feature.append(self.dataset.external_feature_weather[data_range[0]:data_range[1]])
             external_onehot_dim.append(self.dataset.external_feature_weather.shape[1])
+            print("weather feature:", self.dataset.external_feature_weather.shape)
 
         if dataset == "Metro":
             print("**** Only use Metro service time and Fitness should be 60mins *****")
             use_index = []
-            for i in range(num_time_slots // 18):
-                use_index.append(np.arange(5+i*24,23+i*24))
+            true_daily_slots = int(self.daily_slots * (4/3))
+            true_hour_slots = int(60 // (self.dataset.time_fitness * (3/4)))
+            for i in range(int(num_time_slots // self.daily_slots)):
+                use_index.append(np.arange(5*true_hour_slots+i*true_daily_slots,23*true_hour_slots+i*true_daily_slots))
             use_index = np.array(use_index).flatten()
 
         # holiday Feature
@@ -158,6 +160,7 @@ class NodeTrafficLoader(object):
                                 for e in range(data_range[0], num_time_slots + data_range[0])]
                 # one-hot holiday feature                  
                 holiday_feature = one_hot(holiday_feature)
+            print("holiday feature:", holiday_feature.shape)
             external_feature.append(holiday_feature)
             external_onehot_dim.append(holiday_feature.shape[1])
 
@@ -193,6 +196,9 @@ class NodeTrafficLoader(object):
             external_onehot_dim.append(hourofday_feature.shape[1]+dayofweek_feature.shape[1])
             external_feature.append(hourofday_feature)
             external_feature.append(dayofweek_feature)
+            print("hour of day feature:", hourofday_feature.shape)
+            print("day of week feature:", dayofweek_feature.shape)
+
 
         if len(external_feature) > 0:
             external_feature = np.concatenate(external_feature, axis=-1).astype(np.float32)

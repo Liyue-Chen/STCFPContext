@@ -83,6 +83,7 @@ class DataSet(object):
             self.data['Grid']['TrafficGrid'] = self.merge_data(self.data['Grid']['TrafficGrid'],"grid")
 
         self.external_feature_weather = self.data['ExternalFeature']['Weather']
+        self.external_feature_weather = self.upSample(self.data['Node']['TrafficNode'], self.external_feature_weather)
         self.time_range = self.data['TimeRange']
         self.time_fitness = self.data['TimeFitness']
 
@@ -93,6 +94,14 @@ class DataSet(object):
         self.grid_traffic = self.data['Grid']['TrafficGrid']
         self.grid_lat_lng = self.data['Grid']['GridLatLng']
 
+    def upSample(self, traffic, weather):
+        if traffic.shape[0] % weather.shape[0] != 0:
+            raise ValueError("traffic len % weather len is not equal to 0")
+        new_weather = np.zeros((traffic.shape[0],weather.shape[1]))
+        times = traffic.shape[0] // weather.shape[0]
+        for i in range(weather.shape[0]):
+            new_weather[i*times:i*times+times,:] = np.tile(weather[i:i+1],(times,1))
+        return new_weather
 
     def merge_data(self,data,dataType):
         if self.MergeWay == "sum":
