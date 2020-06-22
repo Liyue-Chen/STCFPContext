@@ -76,24 +76,24 @@ warnings.filterwarnings("ignore")
 # os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d didi_xian.data.yml '
 #           '-p batch_size:8,external_method:gating,graph:Distance-Correlation-Interaction,mark:gating_fusion_V1')
 
-### Chengdu ### 
-# os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d didi_chengdu.data.yml '
-#           '-p external_method:not,graph:Distance-Correlation-Interaction,mark:not_external_V1')
+## Chengdu ### 
+os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d didi_chengdu.data.yml '
+          '-p external_method:not,graph:Distance-Correlation-Interaction,mark:not_external_V1')
 
-# os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d didi_chengdu.data.yml '
-#           '-p external_method:direct,graph:Distance-Correlation-Interaction,mark:direct_concat_V1')
+os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d didi_chengdu.data.yml '
+          '-p external_method:direct,graph:Distance-Correlation-Interaction,mark:direct_concat_V1')
 
-# os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d didi_chengdu.data.yml '
-#           '-p external_method:embedding,graph:Distance-Correlation-Interaction,mark:one_embedding_layer_V1')
+os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d didi_chengdu.data.yml '
+          '-p external_method:embedding,graph:Distance-Correlation-Interaction,mark:one_embedding_layer_V1')
 
-# os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d didi_chengdu.data.yml '
-#           '-p external_method:classified,graph:Distance-Correlation-Interaction,mark:classified_embedding_V1')
+os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d didi_chengdu.data.yml '
+          '-p external_method:classified,graph:Distance-Correlation-Interaction,mark:classified_embedding_V1')
 
-# os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d didi_chengdu.data.yml '
-#           '-p batch_size:8,external_method:add,graph:Distance-Correlation-Interaction,mark:adding_fusion_V1')
+os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d didi_chengdu.data.yml '
+          '-p batch_size:8,external_method:add,graph:Distance-Correlation-Interaction,mark:adding_fusion_V1')
 
-# os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d didi_chengdu.data.yml '
-#           '-p batch_size:8,external_method:gating,graph:Distance-Correlation-Interaction,mark:gating_fusion_V1')
+os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d didi_chengdu.data.yml '
+          '-p batch_size:8,external_method:gating,graph:Distance-Correlation-Interaction,mark:gating_fusion_V1')
 
 # ###############################################
 # # BenchMark Metro
@@ -171,8 +171,8 @@ warnings.filterwarnings("ignore")
 # # # BenchMark ChargeStation
 # # ###############################################
 
-os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d chargestation_beijing.data.yml '
-          '-p external_method:not,graph:Distance-Correlation,mark:not_external_V1')
+# os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d chargestation_beijing.data.yml '
+#           '-p external_method:not,graph:Distance-Correlation,mark:not_external_V1')
 
 # os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d chargestation_beijing.data.yml '
 #           '-p batch_size:32,external_method:direct,graph:Distance-Correlation,mark:direct_concat_V1')

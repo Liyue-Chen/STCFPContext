@@ -1,0 +1,16 @@
+hmmlearn>=0.2.1
+keras
+GPUtil
+numpy>=1.16.2
+pandas>=0.24.2
+python-dateutil
+scikit-learn>=0.20.3
+scipy==1.2
+statsmodels>=0.9.0
+wget>=3.2
+xgboost>=0.82
+nni>=0.8
+chinesecalendar>=1.2.2
+PyYAML>=5.1.1
+tensorboard==1.13.0
+pillow>=4.0
