@@ -60,6 +60,7 @@ class STMeta(BaseModel):
                  closeness_len,
                  period_len,
                  trend_len,
+                 weather_len,
 
                  # gcn parameters
                  num_graph=1,
@@ -115,6 +116,7 @@ class STMeta(BaseModel):
         self._closeness_len = int(closeness_len)
         self._period_len = int(period_len)
         self._trend_len = int(trend_len)
+        self._weather_len = int(weather_len)
         self._num_hidden_unit = num_hidden_units
         self._num_dense_units = num_dense_units
         self._lr = lr
@@ -129,7 +131,6 @@ class STMeta(BaseModel):
         # weather holiday temporal position
         self._classified_external_feature_dim = classified_external_feature_dim # external dimension after one-hot
     
-        self._external_len = closeness_len
 
     def build(self, init_vars=True, max_to_keep=5):
         with self._graph.as_default():
@@ -154,6 +155,11 @@ class STMeta(BaseModel):
                 self._input['trend_feature'] = trend_feature.name
                 temporal_features.append([self._trend_len, trend_feature, 'trend_feature'])
 
+            if self._weather_len is not None and self._weather_len > 0:
+                weather_feature = tf.placeholder(tf.float32, [None, None, self._weather_len, 1],
+                                               name='weather_feature')
+                self._input['weather_feature'] = weather_feature.name
+                
             if len(temporal_features) > 0:
                 target = tf.placeholder(tf.float32, [None, None, 1], name='target')
                 laplace_matrix = tf.placeholder(tf.float32, [self._num_graph, None, None], name='laplace_matrix')
@@ -307,6 +313,20 @@ class STMeta(BaseModel):
                         external_dense = tf.concat(embedding_output,axis=-1)
                         external_dense = tf.tile(tf.reshape(external_dense, [-1, 1, 1, np.sum(self._embedding_dim)]),
                                                 [1, tf.shape(dense_inputs)[1], tf.shape(dense_inputs)[2], 1])
+                    elif self.external_method == "lstm":
+                        weather_lstm_hidden = 10
+                        weather_dim = self._classified_external_feature_dim[0]
+                        print("**** Using LSTM in Weather features and window size is {}. Mapping {} >> {} ****".format(self._weather_len,weather_dim,weather_lstm_hidden))
+                        cell = tf.keras.layers.LSTMCell(units=weather_lstm_hidden)
+                        multi_layer_gru = tf.keras.layers.StackedRNNCells([cell] * 1)
+                        outputs = tf.keras.layers.RNN(multi_layer_gru)(
+                            tf.reshape(weather_feature, [-1, self._weather_len, weather_dim]))
+                        weather_input = tf.reshape(outputs, [-1, weather_lstm_hidden])
+                        # concatenate with other holiday and time position feature
+                        external_dense = tf.concat([weather_input,external_input[:,weather_dim:]],axis=-1)
+
+                        external_dense = tf.tile(tf.reshape(external_dense, [-1, 1, 1, weather_lstm_hidden + np.sum(self._classified_external_feature_dim[1:])]),
+                                                 [1, tf.shape(dense_inputs)[1], tf.shape(dense_inputs)[2], 1])
                     else:
                         ValueError("Arguement `external_method` is incorrect.")
                     
@@ -370,6 +390,7 @@ class STMeta(BaseModel):
                        closeness_feature=None,
                        period_feature=None,
                        trend_feature=None,
+                       weather_feature=None,
                        target=None,
                        external_feature=None):
         feed_dict = {
@@ -385,4 +406,6 @@ class STMeta(BaseModel):
             feed_dict['period_feature'] = period_feature
         if self._trend_len is not None and self._trend_len > 0:
             feed_dict['trend_feature'] = trend_feature
+        if self._weather_len is not None and self._weather_len > 0:
+            feed_dict['weather_feature'] = weather_feature
         return feed_dict

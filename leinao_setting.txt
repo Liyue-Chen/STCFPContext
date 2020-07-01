@@ -1,0 +1,79 @@
+######################################################################################################
+cd STCFP
+pip install -r requirement.txt
+pip install --upgrade dask
+python build_install.py
+
+unzip /data/guwen/CD_XA_CQ_SH_BJ5mins/external_5mins.zip 
+mkdir /opt/conda/lib/python3.6/site-packages/UCTB/data
+mv ./*.pkl /opt/conda/lib/python3.6/site-packages/UCTB/data/
+
+cd /code/STCFP/Experiments/STMeta
+python Runner_15_30_External.py > /output/Xian15mins.txt
+
+mv /code/STCFP/Experiments/STMeta/model_dir/  /output
+
+
+######################################################################################################
+cd STCFP
+pip install -r requirement.txt
+pip install --upgrade dask
+python build_install.py
+
+unzip /data/guwen/CD_XA_CQ_SH_BJ5mins/external_5mins.zip 
+mkdir /opt/conda/lib/python3.6/site-packages/UCTB/data
+mv ./*.pkl /opt/conda/lib/python3.6/site-packages/UCTB/data/
+
+cd /code/STCFP/Experiments/STMeta
+python Runner_15_30_External.py > /output/Xian30mins.txt
+
+mv /code/STCFP/Experiments/STMeta/model_dir/  /output
+
+
+######################################################################################################
+cd STCFP2
+pip install -r requirement.txt
+pip install --upgrade dask
+python build_install.py
+
+unzip /data/guwen/CD_XA_CQ_SH_BJ5mins/external_5mins.zip 
+mkdir /opt/conda/lib/python3.6/site-packages/UCTB/data
+mv ./*.pkl /opt/conda/lib/python3.6/site-packages/UCTB/data/
+
+cd /code/STCFP2/Experiments/STMeta
+python Runner_15_30_External.py > /output/Chengdu15_30mins.txt
+
+mv /code/STCFP2/Experiments/STMeta/model_dir/  /output
+
+######################################################################################################
+cd STCFP
+pip install -r requirement.txt
+pip install --upgrade dask
+python build_install.py
+
+unzip /data/guwen/CD_XA_CQ_SH_BJ5mins/external_5mins.zip 
+mkdir /opt/conda/lib/python3.6/site-packages/UCTB/data
+mv ./*.pkl /opt/conda/lib/python3.6/site-packages/UCTB/data/
+
+cd /code/STCFP/Experiments/STMeta
+python Runner_15_30_External.py > /output/Beijing30mins.txt
+
+mv /code/STCFP/Experiments/STMeta/model_dir/  /output
+
+
+
+######################################################################################################
+cd UCTB
+pip install -r requirement.txt
+pip install --upgrade dask
+python build_install.py
+
+unzip /data/guwen/metro_5mins_without_external/metro_5mins.zip
+mkdir /opt/conda/lib/python3.6/site-packages/UCTB/data
+mv ./*.pkl /opt/conda/lib/python3.6/site-packages/UCTB/data/
+
+cd /code/UCTB/Experiments/STMeta
+python Runner_singleGraph.py > /output/Metrov3SingleGraph.txt
+
+mv /code/UCTB/Experiments/STMeta/model_dir/  /output
+

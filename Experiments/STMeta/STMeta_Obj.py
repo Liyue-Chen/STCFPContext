@@ -15,6 +15,8 @@ from UCTB.preprocess.time_utils import is_work_day_china, is_work_day_america
 from UCTB.preprocess import SplitData
 import sys
 
+import warnings
+warnings.filterwarnings("ignore")
 #from sendInfo import *
 
 # argument parser
@@ -43,6 +45,7 @@ yml_files=[terminal_vars['model'], terminal_vars['data']]
 args={}
 args['external_use'] = "weather-holiday-tp"
 args['MergeIndex'] = 1
+args['weather_len'] = 5
 for yml_file in yml_files:
     with open(yml_file, 'r') as f:
         args.update(yaml.load(f))
@@ -54,10 +57,11 @@ if len(terminal_vars['update_params']) > 0:
           for e in terminal_vars['update_params'].split(',')})
 
 
-# to make sure its type is int
+# to make sure type is int
 args['closeness_len'] = int(args['closeness_len'])
 args['period_len'] = int(args['period_len'])
 args['trend_len'] = int(args['trend_len'])
+args['weather_len'] = int(args['weather_len'])
 #####################################################################
 
 if isinstance(args['external_use'],str):
@@ -66,12 +70,12 @@ print("extern_use",args['external_use'])
 
 
 # Generate code_version
-code_version='{}_C{}P{}T{}_G{}_K{}L{}_{}'.format(args['model_version'],
+code_version='{}_C{}P{}T{}_G{}_K{}L{}_F{}_{}'.format(args['model_version'],
                                                    args['closeness_len'], args['period_len'],
                                                    args['trend_len'],
                                                    ''.join(
                                                        [e[0] for e in args['graph'].split('-')]),
-                                                   args['gcn_k'], args['gcn_layers'], args['mark'])
+                                                   args['gcn_k'], args['gcn_layers'],args['MergeIndex'], args['mark'])
 model_dir_path=os.path.join(os.path.dirname(
     os.path.abspath(__file__)), 'model_dir')
 model_dir_path=os.path.join(model_dir_path, args['group'])
@@ -84,6 +88,7 @@ data_loader = NodeTrafficLoader(dataset=args['dataset'], city=args['city'],
                                 closeness_len=args['closeness_len'],
                                 period_len=args['period_len'],
                                 trend_len=args['trend_len'],
+                                weather_len=args['weather_len'],
                                 threshold_distance=args['threshold_distance'],
                                 threshold_correlation=args['threshold_correlation'],
                                 threshold_interaction=args['threshold_interaction'],
@@ -121,6 +126,7 @@ STMeta_obj = STMeta(num_node=data_loader.station_number,
                                  closeness_len=args['closeness_len'],
                                  period_len=args['period_len'],
                                  trend_len=args['trend_len'],
+                                 weather_len = args['weather_len'],
                                  gcn_k=int(args['gcn_k']),
                                  gcn_layers=int(args['gcn_layers']),
                                  gclstm_layers=int(args['gclstm_layers']),
@@ -147,7 +153,8 @@ STMeta_obj = STMeta(num_node=data_loader.station_number,
                                  gpu_device=current_device,
                                  external_method = args['external_method'],
                                  embedding_dim =args['embedding_dim'],
-                                 classified_external_feature_dim=data_loader.external_onehot_dim if args['external_method'] == "classified" else [],
+                                 classified_external_feature_dim=data_loader.external_onehot_dim if args[
+                                     'external_method'] == "classified" or args['external_method'] == "lstm" else [],
                                  decay_param=terminal_vars['decay_param'])
 
 STMeta_obj.build()
@@ -157,11 +164,16 @@ print('Number of training samples', data_loader.train_sequence_len)
 print("Traffic shape is",data_loader.traffic_data.shape)
 print("External dimension is ",data_loader.external_dim)
 
+print(data_loader.train_ef.shape)
+print(data_loader.train_weather.shape)
+print(data_loader.external_onehot_dim)
+
 # # Training
 if args['train']:
     STMeta_obj.fit(closeness_feature=data_loader.train_closeness,
                           period_feature=data_loader.train_period,
                           trend_feature=data_loader.train_trend,
+                          weather_feature=data_loader.train_weather,
                           laplace_matrix=data_loader.LM,
                           target=data_loader.train_y,
                           external_feature=data_loader.train_ef,
@@ -184,6 +196,7 @@ STMeta_obj.load(code_version)
 prediction = STMeta_obj.predict(closeness_feature=data_loader.test_closeness,
                                        period_feature=data_loader.test_period,
                                        trend_feature=data_loader.test_trend,
+                                       weather_feature=data_loader.test_weather,
                                        laplace_matrix=data_loader.LM,
                                        target=data_loader.test_y,
                                        external_feature=data_loader.test_ef,

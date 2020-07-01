@@ -81,7 +81,7 @@ class NodeTrafficLoader(object):
                  closeness_len=6,
                  period_len=7,
                  trend_len=4,
-                 extern_len=5,
+                 weather_len=5,
                  target_length=1,
                  graph='Correlation',
                  threshold_distance=1000,
@@ -103,7 +103,7 @@ class NodeTrafficLoader(object):
         self.closeness_len = int(closeness_len)
         self.period_len = int(period_len)
         self.trend_len = int(trend_len)
-        self.extern_len = int(extern_len)
+        self.weather_len = int(weather_len)
 
         assert type(self.closeness_len) is int and self.closeness_len >= 0
         assert type(self.period_len) is int and self.period_len >= 0
@@ -253,7 +253,7 @@ class NodeTrafficLoader(object):
         self.test_y = self.st_move_sample.move_sample(self.test_data)
 
         # init extern obj
-        self.weather_move_sample = ST_MoveSample(closeness_len=self.extern_len,period_len=0,trend_len=0, target_length=0, daily_slots=self.daily_slots)
+        self.weather_move_sample = ST_MoveSample(closeness_len=self.weather_len,period_len=0,trend_len=0, target_length=0, daily_slots=self.daily_slots)
 
         self.train_weather, _, _, _ = self.weather_move_sample.move_sample(self.train_ef[:,:self.dataset.external_feature_weather.shape[1]])
 
