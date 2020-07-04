@@ -77,3 +77,82 @@ python Runner_singleGraph.py > /output/Metrov3SingleGraph.txt
 
 mv /code/UCTB/Experiments/STMeta/model_dir/  /output
 
+######################################################################################################
+cd UCTB
+pip install -r requirement.txt
+pip install --upgrade dask
+python build_install.py
+
+unzip /data/guwen/DiDi_5mins_without_external/DiDi_5mins.zip
+mkdir /opt/conda/lib/python3.6/site-packages/UCTB/data
+mv ./*.pkl /opt/conda/lib/python3.6/site-packages/UCTB/data/
+
+cd /code/UCTB/Experiments/STMeta
+python Runner_singleGraph.py > /output/DiDiv3SingleGraph.txt
+
+mv /code/UCTB/Experiments/STMeta/model_dir/  /output
+
+
+######################################################################################################
+cd UCTB2
+pip install -r requirement.txt
+pip install --upgrade dask
+python build_install.py
+
+unzip /data/guwen/EV_30mins_without_external/EV_30mins_without_external.zip
+mkdir /opt/conda/lib/python3.6/site-packages/UCTB/data
+mv ./*.pkl /opt/conda/lib/python3.6/site-packages/UCTB/data/
+
+cd /code/UCTB2/Experiments/STMeta
+python Runner_singleGraph.py > /output/EVv3SingleGraph.txt
+
+mv /code/UCTB2/Experiments/STMeta/model_dir/  /output
+
+######################################################################################################
+
+cd Bike
+pip install -r requirement.txt
+pip install --upgrade dask
+python build_install.py
+
+unzip /data/guwen/Bike_60mins_without_external/bike_5mins.zip
+mkdir /opt/conda/lib/python3.6/site-packages/UCTB/data
+mv ./*.pkl /opt/conda/lib/python3.6/site-packages/UCTB/data/
+
+cd /code/Bike/Experiments/STMeta
+python Runner_singleGraph.py > /output/Chicagov3SingleGraph.txt
+
+mv /code/Bike/Experiments/STMeta/model_dir/  /output
+
+######################################################################################################
+
+cd Bike2
+pip install -r requirement.txt
+pip install --upgrade dask
+python build_install.py
+
+unzip /data/guwen/Bike_60mins_without_external/bike_5mins.zip
+mkdir /opt/conda/lib/python3.6/site-packages/UCTB/data
+mv ./*.pkl /opt/conda/lib/python3.6/site-packages/UCTB/data/
+
+cd /code/Bike2/Experiments/STMeta
+python Runner_singleGraph.py > /output/DCv3SingleGraph.txt
+
+mv /code/Bike2/Experiments/STMeta/model_dir/  /output
+
+
+######################################################################################################
+
+cd UCTB
+pip install -r requirement.txt
+pip install --upgrade dask
+python build_install.py
+
+unzip /data/guwen/DiDi_5mins_without_external/DiDi_5mins.zip
+mkdir /opt/conda/lib/python3.6/site-packages/UCTB/data
+mv ./*.pkl /opt/conda/lib/python3.6/site-packages/UCTB/data/
+
+cd /code/UCTB/Experiments/STMeta
+python Runner_singleGraph.py > /output/DiDiv3InterGraph.txt
+
+mv /code/UCTB/Experiments/STMeta/model_dir/  /output
