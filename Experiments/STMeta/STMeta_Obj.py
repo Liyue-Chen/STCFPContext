@@ -107,7 +107,7 @@ train_period, val_period = SplitData.split_data(data_loader.train_period, [0.9, 
 train_trend, val_trend = SplitData.split_data(data_loader.train_trend, [0.9, 0.1])
 train_y, val_y = SplitData.split_data(data_loader.train_y, [0.9, 0.1])
 train_ef, val_ef = SplitData.split_data(data_loader.train_ef, [0.9, 0.1])
-
+train_weather, val_weather = SplitData.split_data(data_loader.train_weather, [0.9, 0.1])
 
 de_normalizer = None if args['normalize'] is False else data_loader.normalizer.min_max_denormal
 
@@ -216,6 +216,7 @@ test_rmse = metric.rmse(prediction=test_prediction, target=data_loader.test_y, t
 prediction = STMeta_obj.predict(closeness_feature=val_closeness,
                                        period_feature=val_period,
                                        trend_feature=val_trend,
+                                       weather_feature=val_weather,
                                        laplace_matrix=data_loader.LM,
                                        target=val_y,
                                        external_feature=val_ef,
