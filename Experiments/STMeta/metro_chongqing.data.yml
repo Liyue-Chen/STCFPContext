@@ -19,10 +19,10 @@ normalize: True
 train: True
 
 lr: 1e-5
-early_stop_length: 200
+early_stop_length: 300
 early_stop_patience: 0.1
 max_epoch: 10000
-batch_size: 64
+batch_size: 32
 
 group: Chongqing
 mark: BM

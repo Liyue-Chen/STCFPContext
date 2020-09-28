@@ -81,7 +81,8 @@ class NodeTrafficLoader(object):
                  closeness_len=6,
                  period_len=7,
                  trend_len=4,
-                 weather_len=5,
+                 external_lstm_len=5,
+                 external_method="not-not-not",
                  target_length=1,
                  graph='Correlation',
                  threshold_distance=1000,
@@ -103,12 +104,14 @@ class NodeTrafficLoader(object):
         self.closeness_len = int(closeness_len)
         self.period_len = int(period_len)
         self.trend_len = int(trend_len)
-        self.weather_len = int(weather_len)
+        self.external_lstm_len = int(external_lstm_len)
 
         assert type(self.closeness_len) is int and self.closeness_len >= 0
         assert type(self.period_len) is int and self.period_len >= 0
         assert type(self.trend_len) is int and self.trend_len >= 0
 
+        if type(data_range) is str and data_range.lower().startswith("0."):
+            data_range = float(data_range)
         if type(data_range) is str and data_range.lower() == 'all':
             data_range = [0, len(self.dataset.node_traffic)]
         elif type(data_range) is float:
@@ -136,11 +139,11 @@ class NodeTrafficLoader(object):
 
         if dataset == "Metro":
             print("**** Only use Metro service time and Fitness should be 60mins *****")
-            use_index = []
-            true_daily_slots = int(self.daily_slots * (4/3))
-            true_hour_slots = int(60 // (self.dataset.time_fitness * (3/4)))
+            use_index = [] # dailt slot 9
+            true_daily_slots = int(self.daily_slots * (4/3))  # 12
+            true_hour_slots = 60 / (self.dataset.time_fitness * (3/4))  #0.5
             for i in range(int(num_time_slots // self.daily_slots)):
-                use_index.append(np.arange(5*true_hour_slots+i*true_daily_slots,23*true_hour_slots+i*true_daily_slots))
+                use_index.append(np.arange(int(5*true_hour_slots+i*true_daily_slots),int(23*true_hour_slots+i*true_daily_slots)))
             use_index = np.array(use_index).flatten()
 
         # holiday Feature
@@ -241,7 +244,6 @@ class NodeTrafficLoader(object):
         self.st_move_sample = ST_MoveSample(closeness_len=self.closeness_len,
                                             period_len=self.period_len,
                                             trend_len=self.trend_len, target_length=1, daily_slots=self.daily_slots)
-
         self.train_closeness, \
         self.train_period, \
         self.train_trend, \
@@ -253,21 +255,33 @@ class NodeTrafficLoader(object):
         self.test_y = self.st_move_sample.move_sample(self.test_data)
 
         # init extern obj
-        self.weather_move_sample = ST_MoveSample(closeness_len=self.weather_len,period_len=0,trend_len=0, target_length=0, daily_slots=self.daily_slots)
+        
+        self.external_move_sample = ST_MoveSample(closeness_len=self.closeness_len,
+                                        period_len=self.period_len,
+                                        trend_len=self.trend_len, target_length=0, daily_slots=self.daily_slots)
 
-        self.train_weather, _, _, _ = self.weather_move_sample.move_sample(self.train_ef[:,:self.dataset.external_feature_weather.shape[1]])
+        self.train_ef_closeness, self.train_ef_period, self.train_ef_trend, _ = self.external_move_sample.move_sample(self.train_ef)
 
-        self.test_weather, _, _, _ = self.weather_move_sample.move_sample(self.test_ef[:,:self.dataset.external_feature_weather.shape[1]])
+        self.test_ef_closeness, self.test_ef_period, self.test_ef_trend, _ = self.external_move_sample.move_sample(self.test_ef)
+
+
+        if self.external_lstm_len is not None and self.external_lstm_len > 0:    
+            self.external_move_sample = ST_MoveSample(closeness_len=self.external_lstm_len,period_len=0,trend_len=0, target_length=0, daily_slots=self.daily_slots)
+
+            self.train_lstm_ef, _, _, _ = self.external_move_sample.move_sample(self.train_ef)
+
+            self.test_lstm_ef, _, _, _ = self.external_move_sample.move_sample(self.test_ef)
 
         self.train_sequence_len = max((len(self.train_closeness), len(self.train_period), len(self.train_trend)))
         self.test_sequence_len = max((len(self.test_closeness), len(self.test_period), len(self.test_trend)))
+
 
         self.train_ef = self.train_ef[-self.train_sequence_len - target_length: -target_length]
         self.test_ef = self.test_ef[-self.test_sequence_len - target_length: -target_length]
         
         # weather
-        self.train_weather = self.train_weather[-self.train_sequence_len - target_length: -target_length]
-        self.test_weather = self.test_weather[-self.test_sequence_len - target_length: -target_length]
+        self.train_lstm_ef = self.train_lstm_ef[-self.train_sequence_len - target_length: -target_length]
+        self.test_lstm_ef = self.test_lstm_ef[-self.test_sequence_len - target_length: -target_length]
         
         # # external feature
         # self.extern_move_sample = ST_MoveSample(closeness_len= self.closeness_len,

@@ -45,7 +45,7 @@ yml_files=[terminal_vars['model'], terminal_vars['data']]
 args={}
 args['external_use'] = "weather-holiday-tp"
 args['MergeIndex'] = 1
-args['weather_len'] = 5
+args['external_lstm_len'] = 5
 for yml_file in yml_files:
     with open(yml_file, 'r') as f:
         args.update(yaml.load(f))
@@ -61,7 +61,7 @@ if len(terminal_vars['update_params']) > 0:
 args['closeness_len'] = int(args['closeness_len'])
 args['period_len'] = int(args['period_len'])
 args['trend_len'] = int(args['trend_len'])
-args['weather_len'] = int(args['weather_len'])
+args['external_lstm_len'] = int(args['external_lstm_len'])
 #####################################################################
 
 if isinstance(args['external_use'],str):
@@ -70,7 +70,7 @@ print("extern_use",args['external_use'])
 
 
 # Generate code_version
-code_version='{}_C{}P{}T{}_G{}_K{}L{}_F{}_{}'.format(args['model_version'],
+code_version='{}_{}_C{}P{}T{}_G{}_K{}L{}_F{}_{}'.format(args['city'],args['model_version'],
                                                    args['closeness_len'], args['period_len'],
                                                    args['trend_len'],
                                                    ''.join(
@@ -88,7 +88,8 @@ data_loader = NodeTrafficLoader(dataset=args['dataset'], city=args['city'],
                                 closeness_len=args['closeness_len'],
                                 period_len=args['period_len'],
                                 trend_len=args['trend_len'],
-                                weather_len=args['weather_len'],
+                                external_method=args['external_method'],
+                                external_lstm_len=args['external_lstm_len'],
                                 threshold_distance=args['threshold_distance'],
                                 threshold_correlation=args['threshold_correlation'],
                                 threshold_interaction=args['threshold_interaction'],
@@ -105,9 +106,15 @@ data_loader = NodeTrafficLoader(dataset=args['dataset'], city=args['city'],
 train_closeness, val_closeness = SplitData.split_data(data_loader.train_closeness, [0.9, 0.1])
 train_period, val_period = SplitData.split_data(data_loader.train_period, [0.9, 0.1])
 train_trend, val_trend = SplitData.split_data(data_loader.train_trend, [0.9, 0.1])
+train_ef_closeness, val_ef_closeness = SplitData.split_data(data_loader.train_ef_closeness, [0.9, 0.1])
+train_ef_period, val_ef_period= SplitData.split_data(data_loader.train_ef_period, [0.9, 0.1])
+train_ef_trend, val_ef_trend = SplitData.split_data(data_loader.train_ef_trend, [0.9, 0.1])
+
 train_y, val_y = SplitData.split_data(data_loader.train_y, [0.9, 0.1])
 train_ef, val_ef = SplitData.split_data(data_loader.train_ef, [0.9, 0.1])
-train_weather, val_weather = SplitData.split_data(data_loader.train_weather, [0.9, 0.1])
+train_lstm_ef, val_lstm_ef = SplitData.split_data(data_loader.train_lstm_ef, [0.9, 0.1])
+
+
 
 de_normalizer = None if args['normalize'] is False else data_loader.normalizer.min_max_denormal
 
@@ -121,41 +128,44 @@ else:
 
 
 STMeta_obj = STMeta(num_node=data_loader.station_number,
-                                 num_graph=data_loader.LM.shape[0],
-                                 external_dim=data_loader.external_dim,
-                                 closeness_len=args['closeness_len'],
-                                 period_len=args['period_len'],
-                                 trend_len=args['trend_len'],
-                                 weather_len = args['weather_len'],
-                                 gcn_k=int(args['gcn_k']),
-                                 gcn_layers=int(args['gcn_layers']),
-                                 gclstm_layers=int(args['gclstm_layers']),
-                                 num_hidden_units=args['num_hidden_units'],
-                                 num_filter_conv1x1=args['num_filter_conv1x1'],
-                                 # temporal attention parameters
-                                 tpe_dim=data_loader.tpe_dim,
-                                 temporal_gal_units=args.get('temporal_gal_units'),
-                                 temporal_gal_num_heads=args.get('temporal_gal_num_heads'),
-                                 temporal_gal_layers=args.get('temporal_gal_layers'),
-                                 # merge parameters
-                                 graph_merge_gal_units=args['graph_merge_gal_units'],
-                                 graph_merge_gal_num_heads=args['graph_merge_gal_num_heads'],
-                                 temporal_merge_gal_units=args['temporal_merge_gal_units'],
-                                 temporal_merge_gal_num_heads=args['temporal_merge_gal_num_heads'],
-                                 # network structure parameters
-                                 st_method=args['st_method'],  # gclstm
-                                 temporal_merge=args['temporal_merge'],  # gal
-                                 graph_merge=args['graph_merge'],  # concat
-                                 build_transfer=args['build_transfer'],
-                                 lr=float(args['lr']),
-                                 code_version=code_version,
-                                 model_dir=model_dir_path,
-                                 gpu_device=current_device,
-                                 external_method = args['external_method'],
-                                 embedding_dim =args['embedding_dim'],
-                                 classified_external_feature_dim=data_loader.external_onehot_dim if args[
-                                     'external_method'] == "classified" or args['external_method'] == "lstm" else [],
-                                 decay_param=terminal_vars['decay_param'])
+                    num_graph=data_loader.LM.shape[0],
+                    external_dim=data_loader.external_dim,
+                    closeness_len=args['closeness_len'],
+                    period_len=args['period_len'],
+                    trend_len=args['trend_len'],
+                    external_lstm_len=args['external_lstm_len'],
+                    gcn_k=int(args['gcn_k']),
+                    gcn_layers=int(args['gcn_layers']),
+                    gclstm_layers=int(args['gclstm_layers']),
+                    num_hidden_units=args['num_hidden_units'],
+                    num_filter_conv1x1=args['num_filter_conv1x1'],
+                    # temporal attention parameters
+                    tpe_dim=data_loader.tpe_dim,
+                    temporal_gal_units=args.get(
+                        'temporal_gal_units'),
+                    temporal_gal_num_heads=args.get(
+                        'temporal_gal_num_heads'),
+                    temporal_gal_layers=args.get(
+                        'temporal_gal_layers'),
+                    # merge parameters
+                    graph_merge_gal_units=args['graph_merge_gal_units'],
+                    graph_merge_gal_num_heads=args['graph_merge_gal_num_heads'],
+                    temporal_merge_gal_units=args['temporal_merge_gal_units'],
+                    temporal_merge_gal_num_heads=args['temporal_merge_gal_num_heads'],
+                    # network structure parameters
+                    st_method=args['st_method'],  # gclstm
+                    temporal_merge=args['temporal_merge'],  # gal
+                    graph_merge=args['graph_merge'],  # concat
+                    build_transfer=args['build_transfer'],
+                    lr=float(args['lr']),
+                    code_version=code_version,
+                    model_dir=model_dir_path,
+                    gpu_device=current_device,
+                    external_method=args['external_method'],
+                    embedding_dim=args['embedding_dim'],
+                    classified_external_feature_dim=data_loader.external_onehot_dim if "multi" in args[
+                        'external_method'] or args['external_method'] == "lstm" else [],
+                    decay_param=terminal_vars['decay_param'])
 
 STMeta_obj.build()
 print(args['dataset'], code_version)
@@ -165,7 +175,7 @@ print("Traffic shape is",data_loader.traffic_data.shape)
 print("External dimension is ",data_loader.external_dim)
 
 print(data_loader.train_ef.shape)
-print(data_loader.train_weather.shape)
+print(data_loader.train_lstm_ef.shape)
 print(data_loader.external_onehot_dim)
 
 # # Training
@@ -173,7 +183,10 @@ if args['train']:
     STMeta_obj.fit(closeness_feature=data_loader.train_closeness,
                           period_feature=data_loader.train_period,
                           trend_feature=data_loader.train_trend,
-                          weather_feature=data_loader.train_weather,
+                          external_closeness=data_loader.train_ef_closeness,
+                          external_period=data_loader.train_ef_period,
+                          external_trend=data_loader.train_ef_trend,
+                          external_lstm_hidden=data_loader.train_lstm_ef,
                           laplace_matrix=data_loader.LM,
                           target=data_loader.train_y,
                           external_feature=data_loader.train_ef,
@@ -194,15 +207,18 @@ STMeta_obj.load(code_version)
 
 
 prediction = STMeta_obj.predict(closeness_feature=data_loader.test_closeness,
-                                       period_feature=data_loader.test_period,
-                                       trend_feature=data_loader.test_trend,
-                                       weather_feature=data_loader.test_weather,
-                                       laplace_matrix=data_loader.LM,
-                                       target=data_loader.test_y,
-                                       external_feature=data_loader.test_ef,
-                                       output_names=('prediction', ),
-                                       sequence_length=data_loader.test_sequence_len,
-                                       cache_volume=int(args['batch_size']), )
+                                period_feature=data_loader.test_period,
+                                trend_feature=data_loader.test_trend,
+                                external_closeness=data_loader.test_ef_closeness,
+                                external_period=data_loader.test_ef_period,
+                                external_trend=data_loader.test_ef_trend,
+                                external_lstm_hidden=data_loader.test_lstm_ef,
+                                laplace_matrix=data_loader.LM,
+                                target=data_loader.test_y,
+                                external_feature=data_loader.test_ef,
+                                output_names=('prediction', ),
+                                sequence_length=data_loader.test_sequence_len,
+                                cache_volume=int(args['batch_size']), )
 
 test_prediction = prediction['prediction']
 
@@ -214,15 +230,19 @@ test_rmse = metric.rmse(prediction=test_prediction, target=data_loader.test_y, t
 
 # val pred
 prediction = STMeta_obj.predict(closeness_feature=val_closeness,
-                                       period_feature=val_period,
-                                       trend_feature=val_trend,
-                                       weather_feature=val_weather,
-                                       laplace_matrix=data_loader.LM,
-                                       target=val_y,
-                                       external_feature=val_ef,
-                                       output_names=('prediction', ),
-                                       sequence_length=max((len(val_closeness), len(val_period), len(val_trend))),
-                                       cache_volume=int(args['batch_size']), )
+                                period_feature=val_period,
+                                trend_feature=val_trend,
+                                external_closeness=val_ef_closeness,
+                                external_period=val_ef_period,
+                                external_trend=val_ef_trend,
+                                external_lstm_hidden=val_lstm_ef,
+                                laplace_matrix=data_loader.LM,
+                                target=val_y,
+                                external_feature=val_ef,
+                                output_names=('prediction', ),
+                                sequence_length=max(
+                                    (len(val_closeness), len(val_period), len(val_trend))),
+                                cache_volume=int(args['batch_size']), )
 
 val_prediction = prediction['prediction']
 
