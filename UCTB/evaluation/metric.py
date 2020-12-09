@@ -28,6 +28,19 @@ def mape(prediction, target, threshold=0):
     return (np.dot((np.abs(prediction - target) / (target + (1 - (target > threshold)))).reshape([1, -1]),
                    target.reshape([-1, 1]) > threshold) / np.sum(target > threshold))[0, 0]
 
+def mae(prediction, target, threshold=None):
+    """
+    Args:
+        prediction(ndarray): prediction with shape [batch_size, ...]
+        target(ndarray): same shape with prediction, [batch_size, ...]
+        threshold(float): data smaller than threshold in target will be removed in computing the mae,
+    """
+    if threshold is None:
+        return np.mean(np.abs(prediction - target))
+    else:
+        return (np.dot(np.reshape(np.abs(prediction - target),[1,-1]),target.reshape([-1, 1]) > threshold) / np.sum(target > threshold))[0][0]
+
+
 
 # def rmse_grid(prediction, target, threshold=None):
 #     if threshold is None:

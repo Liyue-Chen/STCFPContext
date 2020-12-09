@@ -263,7 +263,7 @@ val_loss = STMeta_obj.load_event_scalar('val_loss')
 
 
 
-print('Val result', val_rmse )
+print('Val result', val_rmse)
 print('Test result', test_rmse)
 
 time_consumption = [val_loss[e][0] - val_loss[e-1][0] for e in range(1, len(val_loss))]

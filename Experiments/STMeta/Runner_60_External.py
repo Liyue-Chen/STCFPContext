@@ -38,11 +38,11 @@ warnings.filterwarnings("ignore")
 #           '-p external_method:not-linear-gating,graph:Distance-Correlation-Interaction,mark:gating_fusion_V1')
 
 ### DC ### 
-# os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_dc.data.yml '
-#           '-p external_method:not-not-not,graph:Distance-Correlation-Interaction,mark:not_external_V1')
+os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_dc.data.yml '
+          '-p external_method:not-not-not,graph:Distance-Correlation-Interaction,mark:not_external_V1')
 
-# os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_dc.data.yml '
-#           '-p external_method:not-not-concat,graph:Distance-Correlation-Interaction,mark:direct_concat_V1')
+os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_dc.data.yml '
+          '-p external_method:not-not-concat,graph:Distance-Correlation-Interaction,mark:direct_concat_V1')
 
 # os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_dc.data.yml '
 #           '-p external_method:emb-not-concat,graph:Distance-Correlation-Interaction,mark:one_embedding_layer_V1')
@@ -58,11 +58,11 @@ warnings.filterwarnings("ignore")
 # # BenchMark DiDi
 # ###############################################
 ### Xian ###
-# os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d didi_xian.data.yml '
-#           '-p external_method:not-not-not,graph:Distance-Correlation-Interaction,mark:not_external_V1')
+os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d didi_xian.data.yml '
+          '-p external_method:not-not-not,graph:Distance-Correlation-Interaction,mark:not_external_V1')
 
-# os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d didi_xian.data.yml '
-#           '-p external_method:not-not-concat,graph:Distance-Correlation-Interaction,mark:direct_concat_V1')
+os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d didi_xian.data.yml '
+          '-p external_method:not-not-concat,graph:Distance-Correlation-Interaction,mark:direct_concat_V1')
 
 # os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d didi_xian.data.yml '
 #           '-p external_method:emb-not-concat,graph:Distance-Correlation-Interaction,mark:one_embedding_layer_V1')
@@ -99,11 +99,11 @@ warnings.filterwarnings("ignore")
 # # BenchMark Metro
 # ###############################################
 ### Shanghai ###
-# os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d metro_shanghai.data.yml '
-#           '-p external_method:not-not-not,graph:Distance-Correlation-Line,mark:not_external_V1')
+os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d metro_shanghai.data.yml '
+          '-p external_method:not-not-not,graph:Distance-Correlation-Line,mark:not_external_V1')
 
-# os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d metro_shanghai.data.yml '
-#           '-p external_method:not-not-concat,graph:Distance-Correlation-Line,mark:direct_concat_V1')
+os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d metro_shanghai.data.yml '
+          '-p external_method:not-not-concat,graph:Distance-Correlation-Line,mark:direct_concat_V1')
 
 # os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d metro_shanghai.data.yml '
 #           '-p batch_size:8,external_method:emb-not-concat,graph:Distance-Correlation-Line,mark:one_embedding_layer_V1')
@@ -171,11 +171,11 @@ warnings.filterwarnings("ignore")
 # # # BenchMark ChargeStation
 # # ###############################################
 
-# os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d chargestation_beijing.data.yml '
-#           '-p external_method:not-not-not,graph:Distance-Correlation,mark:not_external_V1')
+os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d chargestation_beijing.data.yml '
+          '-p external_method:not-not-not,graph:Distance-Correlation,mark:not_external_V1')
 
-# os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d chargestation_beijing.data.yml '
-#           '-p batch_size:32,external_method:not-not-concat,graph:Distance-Correlation,mark:direct_concat_V1')
+os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d chargestation_beijing.data.yml '
+          '-p batch_size:32,external_method:not-not-concat,graph:Distance-Correlation,mark:direct_concat_V1')
 
 # os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d chargestation_beijing.data.yml '
 #           '-p batch_size:32,external_method:emb-not-concat,graph:Distance-Correlation,mark:one_embedding_layer_V1')
