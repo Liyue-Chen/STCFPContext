@@ -43,6 +43,7 @@ class DataSet(object):
 
         if data_dir is None:
             data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
+            self.data_dir = data_dir
 
         if os.path.isdir(data_dir) is False:
             os.makedirs(data_dir)

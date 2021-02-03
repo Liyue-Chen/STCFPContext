@@ -92,6 +92,7 @@ class STMeta(BaseModel):
                  gpu_device='0',
                  external_method="not-not-not",
                  embedding_dim = [10,1,5],
+                 poi_dim = None,
                  classified_external_feature_dim = [],
                  decay_param=None,**kwargs):
         # no direct one_layer classified
@@ -107,6 +108,7 @@ class STMeta(BaseModel):
         self._gclstm_layers = gclstm_layers
         self._num_graph = num_graph
         self._external_dim = external_dim
+        self._poi_dim = poi_dim
         self._output_activation = output_activation
 
         self._st_method = st_method
@@ -116,7 +118,10 @@ class STMeta(BaseModel):
         self._closeness_len = int(closeness_len)
         self._period_len = int(period_len)
         self._trend_len = int(trend_len)
-        self._external_lstm_len = int(external_lstm_len)
+        if "lstm" in external_method:
+            self._external_lstm_len = int(external_lstm_len)
+        else:
+            self._external_lstm_len = None
         self._num_hidden_unit = num_hidden_units
         self._num_dense_units = num_dense_units
         self._lr = lr
@@ -142,7 +147,6 @@ class STMeta(BaseModel):
         # external dimension after one-hot orderd by weather/holiday/temporal position
         self._classified_external_feature_dim = classified_external_feature_dim 
     
-
     def build(self, init_vars=True, max_to_keep=5):
         with self._graph.as_default():
             if self.earlyconcatFlag or self.earlyaddFlag:
@@ -188,6 +192,10 @@ class STMeta(BaseModel):
             if self._external_dim is not None and self._external_dim > 0:
                 external_input = tf.placeholder(tf.float32, [None, self._external_dim])
                 self._input['external_feature'] = external_input.name
+
+            if self._poi_dim is not None and self._poi_dim > 0:
+                poi_feature = tf.placeholder(tf.float32, [None, self._num_node, self._poi_dim])
+                self._input['poi_feature'] = poi_feature.name
 
             if self._external_lstm_len is not None and self._external_lstm_len > 0:
                 external_lstm_hidden = tf.placeholder(tf.float32, [None, None, self._external_lstm_len, 1],
@@ -327,10 +335,25 @@ class STMeta(BaseModel):
                 else:
                     print("**** Using Late Fusion Modeling techniques ****")
                     # representation stage
+                    print("poi_dim",self._poi_dim)
+                    print("external_dim",self._external_dim)
+    
+                    if self._poi_dim is not None and self._poi_dim > 0:
+                        poi_dense = tf.reshape(poi_feature, [-1, self._num_node, 1, self._poi_dim])
+                        # if have external dimention
+                        if self._external_dim is not None and self._external_dim > 0:
+                            external_dense = tf.tile(tf.reshape(external_input, [-1, 1, 1, self._external_dim]), [1, self._num_node, 1, 1])
+                            external_dense = tf.concat(
+                                [external_dense, poi_dense], axis=-1)
+                            print("Concat POI to External Features {} >> {}".format(self._external_dim,self._external_dim+self._poi_dim))
+                            self._external_dim += self._poi_dim
+                        else:
+                            external_dense = poi_dense
+                            #self._external_dim = self._poi_dim
+
                     if self.external_method[0] == "not":
                         print("**** This model doesn't have representation stage.****")
-                        external_dense = external_input
-                        reshape_size = self._external_dim
+                        
                     elif self.external_method[0] == "emb":
                         if isinstance(self._embedding_dim, int):
                             pass
@@ -342,24 +365,27 @@ class STMeta(BaseModel):
                         print(
                             "**** Using one embedding layer >> {} ****".format(self._embedding_dim))
                         external_dense = tf.keras.layers.Dense(units=self._embedding_dim, kernel_regularizer=tf.keras.regularizers.l2(
-                            0.01), bias_regularizer=tf.keras.regularizers.l2(0.01))(external_input)
-                        reshape_size = self._embedding_dim
+                            0.01), bias_regularizer=tf.keras.regularizers.l2(0.01))(external_dense)
+                        #reshape_size = self._embedding_dim
 
                     elif self.external_method[0] == "multi":
                         if len(self._classified_external_feature_dim) != len(self._embedding_dim):
                             raise ValueError("external feature dim is not equal to specified embedding_dim, modify `embedding_dim`")
                         else:        
                             print("**** Using classified embedding layers {} >> {} ****".format(self._classified_external_feature_dim, self._embedding_dim))
+                            if self._poi_dim is not None and self._poi_dim > 0:
+                                self._classified_external_feature_dim.append(self._poi_dim)
+                                self._embedding_dim.append(self._poi_dim)
                             embedding_output = []
                             ind = 0
                             for i,tmp in enumerate(self._classified_external_feature_dim):
-                                tensor_slice = tf.strided_slice(external_input,[0,ind],[tf.shape(external_input)[0],ind+tmp],[1,1])
-                                tensor_slice = tf.reshape(tensor_slice,[-1, tmp])
+                                tensor_slice = tf.strided_slice(external_dense,[0,0,0,ind],[tf.shape(external_dense)[0],tf.shape(external_dense)[1],tf.shape(external_dense)[2],ind+tmp],[1,1,1,1])
+                                tensor_slice = tf.reshape(tensor_slice,[tf.shape(external_dense)[0],tf.shape(external_dense)[1],tf.shape(external_dense)[2], tmp])
                                 extern_embedding = tf.keras.layers.Dense(units=self._embedding_dim[i],kernel_regularizer=tf.keras.regularizers.l2(0.01),bias_regularizer=tf.keras.regularizers.l2(0.01))(tensor_slice)
                                 embedding_output.append(extern_embedding)
                                 ind += tmp
                             external_dense = tf.concat(embedding_output,axis=-1)
-                        reshape_size = np.sum(self._embedding_dim)
+                        #reshape_size = np.sum(self._embedding_dim)
                             
                     elif self.external_method[0] == "lstm":
                         context_lstm_hidden = 16
@@ -369,12 +395,13 @@ class STMeta(BaseModel):
                         external_dense = tf.keras.layers.RNN(multi_layer_gru)(
                             tf.reshape(external_lstm_hidden, [-1, self._external_lstm_len, self._external_dim]))
                         reshape_size = context_lstm_hidden
+                        external_dense = tf.tile(tf.reshape(external_dense, [-1, 1, 1, reshape_size]),[1, self._num_node, 1, 1])
 
                     else:
                         raise ValueError("The first `external method` parameter is wrong.")
 
                     # alignment stage
-                    external_dense = tf.tile(tf.reshape(external_dense, [-1, 1, 1, reshape_size]),[1, tf.shape(dense_inputs)[1], tf.shape(dense_inputs)[2], 1])
+                    #external_dense = tf.tile(tf.reshape(external_dense, [-1, 1, 1, reshape_size]),[1, tf.shape(dense_inputs)[1], tf.shape(dense_inputs)[2], 1])
                     
                     if self.external_method[1] == "not":
                         print("**** This model doesn't have alignment stage.****")
@@ -455,7 +482,8 @@ class STMeta(BaseModel):
                        external_period=None,
                        external_trend=None,
                        target=None,
-                       external_feature=None):
+                       external_feature=None,
+                       poi_feature=None):
         feed_dict = {
             'laplace_matrix': laplace_matrix,
         }
@@ -463,6 +491,8 @@ class STMeta(BaseModel):
             feed_dict['target'] = target
         if self._external_dim is not None and self._external_dim > 0:
             feed_dict['external_feature'] = external_feature
+        if self._poi_dim is not None and self._poi_dim > 0:
+            feed_dict['poi_feature'] = poi_feature
         if self._closeness_len is not None and self._closeness_len > 0:
             feed_dict['closeness_feature'] = closeness_feature
         if self._period_len is not None and self._period_len > 0:
@@ -475,4 +505,5 @@ class STMeta(BaseModel):
             feed_dict['external_closeness'] = external_closeness
             feed_dict['external_period'] = external_period
             feed_dict['external_trend'] = external_trend
+        #print("fd:",feed_dict.keys())
         return feed_dict

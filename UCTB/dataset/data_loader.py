@@ -3,6 +3,7 @@ import copy
 import datetime
 import numpy as np
 import pandas as pd
+import pickle
 
 from dateutil.parser import parse
 from sklearn.metrics.pairwise import cosine_similarity
@@ -84,6 +85,7 @@ class NodeTrafficLoader(object):
                  external_lstm_len=5,
                  external_method="not-not-not",
                  target_length=1,
+                 poi_distance=1000,
                  graph='Correlation',
                  threshold_distance=1000,
                  threshold_correlation=0,
@@ -105,6 +107,8 @@ class NodeTrafficLoader(object):
         self.period_len = int(period_len)
         self.trend_len = int(trend_len)
         self.external_lstm_len = int(external_lstm_len)
+        self.poi_distance = int(poi_distance)
+        self.poi_dim = None
 
         assert type(self.closeness_len) is int and self.closeness_len >= 0
         assert type(self.period_len) is int and self.period_len >= 0
@@ -200,8 +204,7 @@ class NodeTrafficLoader(object):
             external_feature.append(hourofday_feature)
             external_feature.append(dayofweek_feature)
             print("hour of day feature:", hourofday_feature.shape)
-            print("day of week feature:", dayofweek_feature.shape)
-
+            print("day of week feature:", dayofweek_feature.shape)            
 
         if len(external_feature) > 0:
             external_feature = np.concatenate(external_feature, axis=-1).astype(np.float32)
@@ -254,42 +257,63 @@ class NodeTrafficLoader(object):
         self.test_trend, \
         self.test_y = self.st_move_sample.move_sample(self.test_data)
 
-        # init extern obj
-        
-        self.external_move_sample = ST_MoveSample(closeness_len=self.closeness_len,
-                                        period_len=self.period_len,
-                                        trend_len=self.trend_len, target_length=0, daily_slots=self.daily_slots)
-
-        self.train_ef_closeness, self.train_ef_period, self.train_ef_trend, _ = self.external_move_sample.move_sample(self.train_ef)
-
-        self.test_ef_closeness, self.test_ef_period, self.test_ef_trend, _ = self.external_move_sample.move_sample(self.test_ef)
-
-
-        if self.external_lstm_len is not None and self.external_lstm_len > 0:    
-            self.external_move_sample = ST_MoveSample(closeness_len=self.external_lstm_len,period_len=0,trend_len=0, target_length=0, daily_slots=self.daily_slots)
-
-            self.train_lstm_ef, _, _, _ = self.external_move_sample.move_sample(self.train_ef)
-
-            self.test_lstm_ef, _, _, _ = self.external_move_sample.move_sample(self.test_ef)
-
         self.train_sequence_len = max((len(self.train_closeness), len(self.train_period), len(self.train_trend)))
         self.test_sequence_len = max((len(self.test_closeness), len(self.test_period), len(self.test_trend)))
 
+        if "poi" in external_use:
+            print("**** Using POIs feature ****")
+            store_path = os.path.join(self.dataset.data_dir,"{}_POIs_norm_{}.pkl".format(self.dataset.city,self.poi_distance))
+            with open(store_path,"rb") as fp:
+                poi_feature = pickle.load(fp)
+                poi_feature = poi_feature[self.traffic_data_index]
+            #poi_feature = np.tile(poi_feature[np.newaxis,:],[num_time_slots,1,1])
+            #external_onehot_dim.append(poi_feature.shape[-1])
+            self.poi_feature_train = np.tile(poi_feature[np.newaxis,:],[self.train_sequence_len,1,1])
+            self.poi_feature_test = np.tile(poi_feature[np.newaxis,:],[self.test_sequence_len,1,1])
+            self.poi_dim = poi_feature.shape[-1]
+            print("POIs train shape is:",self.poi_feature_train.shape)
+            print("POIs test shape is:",self.poi_feature_test.shape)
 
-        self.train_ef = self.train_ef[-self.train_sequence_len - target_length: -target_length]
-        self.test_ef = self.test_ef[-self.test_sequence_len - target_length: -target_length]
-        
-        # weather
-        self.train_lstm_ef = self.train_lstm_ef[-self.train_sequence_len - target_length: -target_length]
-        self.test_lstm_ef = self.test_lstm_ef[-self.test_sequence_len - target_length: -target_length]
-        
-        # # external feature
-        # self.extern_move_sample = ST_MoveSample(closeness_len= self.closeness_len,
-        #                                     period_len=self.period_len,
-        #                                     trend_len=self.trend_len, target_length=1, daily_slots=self.daily_slots)
+        # init extern obj
+        self.train_ef_closeness = None
+        self.train_ef_period = None
+        self.train_ef_trend = None
+        self.train_lstm_ef =  None
+        self.test_ef_closeness = None
+        self.test_ef_period = None
+        self.test_ef_trend = None
+        self.test_lstm_ef = None
+        if len(external_feature) > 0:
+            self.external_move_sample = ST_MoveSample(closeness_len=self.closeness_len,
+                                            period_len=self.period_len,
+                                            trend_len=self.trend_len, target_length=0, daily_slots=self.daily_slots)
 
-        # self.train_external, _, _, _ = self.extern_move_sample.move_sample(self.train_ef)
-        # self.test_external, _, _, _ = self.extern_move_sample.move_sample(self.test_ef)
+            self.train_ef_closeness, self.train_ef_period, self.train_ef_trend, _ = self.external_move_sample.move_sample(self.train_ef)
+
+            self.test_ef_closeness, self.test_ef_period, self.test_ef_trend, _ = self.external_move_sample.move_sample(self.test_ef)
+
+
+            if self.external_lstm_len is not None and self.external_lstm_len > 0:    
+                self.external_move_sample = ST_MoveSample(closeness_len=self.external_lstm_len,period_len=0,trend_len=0, target_length=0, daily_slots=self.daily_slots)
+
+                self.train_lstm_ef, _, _, _ = self.external_move_sample.move_sample(self.train_ef)
+
+                self.test_lstm_ef, _, _, _ = self.external_move_sample.move_sample(self.test_ef)
+
+            self.train_ef = self.train_ef[-self.train_sequence_len - target_length: -target_length]
+            self.test_ef = self.test_ef[-self.test_sequence_len - target_length: -target_length]
+            
+            # weather
+            self.train_lstm_ef = self.train_lstm_ef[-self.train_sequence_len - target_length: -target_length]
+            self.test_lstm_ef = self.test_lstm_ef[-self.test_sequence_len - target_length: -target_length]
+            
+            # # external feature
+            # self.extern_move_sample = ST_MoveSample(closeness_len= self.closeness_len,
+            #                                     period_len=self.period_len,
+            #                                     trend_len=self.trend_len, target_length=1, daily_slots=self.daily_slots)
+
+            # self.train_external, _, _, _ = self.extern_move_sample.move_sample(self.train_ef)
+            # self.test_external, _, _, _ = self.extern_move_sample.move_sample(self.test_ef)
 
         if with_tpe:
 

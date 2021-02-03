@@ -106,13 +106,16 @@ data_loader = NodeTrafficLoader(dataset=args['dataset'], city=args['city'],
 train_closeness, val_closeness = SplitData.split_data(data_loader.train_closeness, [0.9, 0.1])
 train_period, val_period = SplitData.split_data(data_loader.train_period, [0.9, 0.1])
 train_trend, val_trend = SplitData.split_data(data_loader.train_trend, [0.9, 0.1])
-train_ef_closeness, val_ef_closeness = SplitData.split_data(data_loader.train_ef_closeness, [0.9, 0.1])
-train_ef_period, val_ef_period= SplitData.split_data(data_loader.train_ef_period, [0.9, 0.1])
-train_ef_trend, val_ef_trend = SplitData.split_data(data_loader.train_ef_trend, [0.9, 0.1])
+if data_loader.external_dim > 0:
+    train_ef_closeness, val_ef_closeness = SplitData.split_data(data_loader.train_ef_closeness, [0.9, 0.1])
+    train_ef_period, val_ef_period= SplitData.split_data(data_loader.train_ef_period, [0.9, 0.1])
+    train_ef_trend, val_ef_trend = SplitData.split_data(data_loader.train_ef_trend, [0.9, 0.1])
+    train_ef, val_ef = SplitData.split_data(data_loader.train_ef, [0.9, 0.1])
+    train_lstm_ef, val_lstm_ef = SplitData.split_data(data_loader.train_lstm_ef, [0.9, 0.1])
+if data_loader.poi_dim > 0:
+    train_poi,val_poi = SplitData.split_data(data_loader.poi_feature_train, [0.9, 0.1])
 
 train_y, val_y = SplitData.split_data(data_loader.train_y, [0.9, 0.1])
-train_ef, val_ef = SplitData.split_data(data_loader.train_ef, [0.9, 0.1])
-train_lstm_ef, val_lstm_ef = SplitData.split_data(data_loader.train_lstm_ef, [0.9, 0.1])
 
 
 
@@ -163,6 +166,7 @@ STMeta_obj = STMeta(num_node=data_loader.station_number,
                     gpu_device=current_device,
                     external_method=args['external_method'],
                     embedding_dim=args['embedding_dim'],
+                    poi_dim=data_loader.poi_dim,
                     classified_external_feature_dim=data_loader.external_onehot_dim if "multi" in args[
                         'external_method'] or args['external_method'] == "lstm" else [],
                     decay_param=terminal_vars['decay_param'])
@@ -174,15 +178,17 @@ print('Number of training samples', data_loader.train_sequence_len)
 print("Traffic shape is",data_loader.traffic_data.shape)
 print("External dimension is ",data_loader.external_dim)
 
-print(data_loader.train_ef.shape)
-print(data_loader.train_lstm_ef.shape)
-print(data_loader.external_onehot_dim)
+if data_loader.external_dim > 0:
+    print("train_ef shape is",data_loader.train_ef.shape)
+    print("train_lstm_ef shape is",data_loader.train_lstm_ef.shape)
+    print("external_onehot_dim is",data_loader.external_onehot_dim)
 
-# # Training
+# Training
 if args['train']:
     STMeta_obj.fit(closeness_feature=data_loader.train_closeness,
                           period_feature=data_loader.train_period,
                           trend_feature=data_loader.train_trend,
+                          poi_feature = data_loader.poi_feature_train,
                           external_closeness=data_loader.train_ef_closeness,
                           external_period=data_loader.train_ef_period,
                           external_trend=data_loader.train_ef_trend,
@@ -203,19 +209,21 @@ if args['train']:
                           verbose=True,
                           save_model=True)
 
+
 STMeta_obj.load(code_version)
 
 
 prediction = STMeta_obj.predict(closeness_feature=data_loader.test_closeness,
                                 period_feature=data_loader.test_period,
                                 trend_feature=data_loader.test_trend,
-                                external_closeness=data_loader.test_ef_closeness,
-                                external_period=data_loader.test_ef_period,
-                                external_trend=data_loader.test_ef_trend,
-                                external_lstm_hidden=data_loader.test_lstm_ef,
+                                poi_feature = data_loader.poi_feature_test,
+                                external_closeness=data_loader.test_ef_closeness if data_loader.external_dim > 0 else None,
+                                external_period=data_loader.test_ef_period if data_loader.external_dim > 0 else None,
+                                external_trend=data_loader.test_ef_trend if data_loader.external_dim > 0 else None,
+                                external_lstm_hidden=data_loader.test_lstm_ef if data_loader.external_dim > 0 else None,
                                 laplace_matrix=data_loader.LM,
                                 target=data_loader.test_y,
-                                external_feature=data_loader.test_ef,
+                                external_feature=data_loader.test_ef if data_loader.external_dim > 0 else None,
                                 output_names=('prediction', ),
                                 sequence_length=data_loader.test_sequence_len,
                                 cache_volume=int(args['batch_size']), )
@@ -232,13 +240,14 @@ test_rmse = metric.rmse(prediction=test_prediction, target=data_loader.test_y, t
 prediction = STMeta_obj.predict(closeness_feature=val_closeness,
                                 period_feature=val_period,
                                 trend_feature=val_trend,
-                                external_closeness=val_ef_closeness,
-                                external_period=val_ef_period,
-                                external_trend=val_ef_trend,
-                                external_lstm_hidden=val_lstm_ef,
+                                poi_feature = val_poi,
+                                external_closeness=val_ef_closeness if data_loader.external_dim > 0 else None,
+                                external_period=val_ef_period if data_loader.external_dim > 0 else None,
+                                external_trend=val_ef_trend if data_loader.external_dim > 0 else None,
+                                external_lstm_hidden=val_lstm_ef if data_loader.external_dim > 0 else None,
                                 laplace_matrix=data_loader.LM,
                                 target=val_y,
-                                external_feature=val_ef,
+                                external_feature=val_ef if data_loader.external_dim > 0 else None,
                                 output_names=('prediction', ),
                                 sequence_length=max(
                                     (len(val_closeness), len(val_period), len(val_trend))),
@@ -248,7 +257,7 @@ val_prediction = prediction['prediction']
 
 if de_normalizer:
     val_prediction = de_normalizer(val_prediction)
-    val_y = de_normalizer(val_y)
+    #val_y = de_normalizer(val_y)
 
 val_rmse = metric.rmse(prediction=val_prediction, target=val_y, threshold=0)
  
