@@ -32,7 +32,7 @@ To analyze context modeling techniques, run the following experiments.
 python3 Runner_Early_Modelling.py
 ```
 
-#### Context Modeling Techniques Impact
+#### Late Fusion Modeling Variants
 
 ```bash
 python3 Runner_60_External.py
