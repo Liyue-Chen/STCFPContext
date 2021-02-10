@@ -112,7 +112,7 @@ if data_loader.external_dim > 0:
     train_ef_trend, val_ef_trend = SplitData.split_data(data_loader.train_ef_trend, [0.9, 0.1])
     train_ef, val_ef = SplitData.split_data(data_loader.train_ef, [0.9, 0.1])
     train_lstm_ef, val_lstm_ef = SplitData.split_data(data_loader.train_lstm_ef, [0.9, 0.1])
-if data_loader.poi_dim > 0:
+if data_loader.poi_dim is not None and data_loader.poi_dim > 0:
     train_poi,val_poi = SplitData.split_data(data_loader.poi_feature_train, [0.9, 0.1])
 
 train_y, val_y = SplitData.split_data(data_loader.train_y, [0.9, 0.1])
@@ -240,7 +240,7 @@ test_rmse = metric.rmse(prediction=test_prediction, target=data_loader.test_y, t
 prediction = STMeta_obj.predict(closeness_feature=val_closeness,
                                 period_feature=val_period,
                                 trend_feature=val_trend,
-                                poi_feature = val_poi,
+                                poi_feature = val_poi if data_loader.poi_dim is not None and data_loader.poi_dim > 0 else None,
                                 external_closeness=val_ef_closeness if data_loader.external_dim > 0 else None,
                                 external_period=val_ef_period if data_loader.external_dim > 0 else None,
                                 external_trend=val_ef_trend if data_loader.external_dim > 0 else None,

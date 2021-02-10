@@ -260,6 +260,9 @@ class NodeTrafficLoader(object):
         self.train_sequence_len = max((len(self.train_closeness), len(self.train_period), len(self.train_trend)))
         self.test_sequence_len = max((len(self.test_closeness), len(self.test_period), len(self.test_trend)))
 
+        self.poi_feature_train = None
+        self.poi_feature_test = None
+        self.poi_dim = None
         if "poi" in external_use:
             print("**** Using POIs feature ****")
             store_path = os.path.join(self.dataset.data_dir,"{}_POIs_norm_{}.pkl".format(self.dataset.city,self.poi_distance))

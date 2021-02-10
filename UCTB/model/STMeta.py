@@ -337,12 +337,14 @@ class STMeta(BaseModel):
                     # representation stage
                     print("poi_dim",self._poi_dim)
                     print("external_dim",self._external_dim)
-    
+
+                    if self._external_dim is not None and self._external_dim > 0:
+                        external_dense = tf.tile(tf.reshape(external_input, [-1, 1, 1, self._external_dim]), [1, self._num_node, 1, 1])
+
                     if self._poi_dim is not None and self._poi_dim > 0:
                         poi_dense = tf.reshape(poi_feature, [-1, self._num_node, 1, self._poi_dim])
                         # if have external dimention
                         if self._external_dim is not None and self._external_dim > 0:
-                            external_dense = tf.tile(tf.reshape(external_input, [-1, 1, 1, self._external_dim]), [1, self._num_node, 1, 1])
                             external_dense = tf.concat(
                                 [external_dense, poi_dense], axis=-1)
                             print("Concat POI to External Features {} >> {}".format(self._external_dim,self._external_dim+self._poi_dim))
