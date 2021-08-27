@@ -96,8 +96,8 @@ class DataSet(object):
         self.grid_lat_lng = self.data['Grid']['GridLatLng']
 
     def Sample(self, traffic, weather):
-        # print("Traffic shape is:",traffic.shape)
-        # print("Weather shape is:",weather.shape)
+        print("Traffic shape is:",traffic.shape)
+        print("Weather shape is:",weather.shape)
         if traffic.shape[0] >= weather.shape[0]:
             # upSample
             if traffic.shape[0] % weather.shape[0] != 0:

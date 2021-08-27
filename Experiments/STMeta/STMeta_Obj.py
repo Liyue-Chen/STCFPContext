@@ -46,6 +46,7 @@ args={}
 args['external_use'] = "weather-holiday-tp"
 args['MergeIndex'] = 1
 args['external_lstm_len'] = 5
+args['poi_distance'] = 1000
 for yml_file in yml_files:
     with open(yml_file, 'r') as f:
         args.update(yaml.load(f))
@@ -70,12 +71,10 @@ print("extern_use",args['external_use'])
 
 
 # Generate code_version
-code_version='{}_{}_C{}P{}T{}_G{}_K{}L{}_F{}_{}'.format(args['city'],args['model_version'],
+code_version='{}_{}_C{}P{}T{}_F{}_{}'.format(args['city'],args['model_version'],
                                                    args['closeness_len'], args['period_len'],
                                                    args['trend_len'],
-                                                   ''.join(
-                                                       [e[0] for e in args['graph'].split('-')]),
-                                                   args['gcn_k'], args['gcn_layers'],args['MergeIndex'], args['mark'])
+                                                   args['MergeIndex'], args['mark'])
 model_dir_path=os.path.join(os.path.dirname(
     os.path.abspath(__file__)), 'model_dir')
 model_dir_path=os.path.join(model_dir_path, args['group'])
@@ -99,6 +98,7 @@ data_loader = NodeTrafficLoader(dataset=args['dataset'], city=args['city'],
                                 workday_parser=is_work_day_america if args['dataset'] == 'Bike' else is_work_day_china,
                                 external_use=args['external_use'],
                                 MergeIndex=args['MergeIndex'],
+                                poi_distance=args['poi_distance'],
                                 MergeWay="max" if args["dataset"] == "ChargeStation" else "sum")
 
 
@@ -235,6 +235,7 @@ if de_normalizer:
     data_loader.test_y = de_normalizer(data_loader.test_y)
 
 test_rmse = metric.rmse(prediction=test_prediction, target=data_loader.test_y, threshold=0)
+test_mae = metric.mae(prediction=test_prediction, target=data_loader.test_y, threshold=0)
 
 # val pred
 prediction = STMeta_obj.predict(closeness_feature=val_closeness,
@@ -260,7 +261,7 @@ if de_normalizer:
     #val_y = de_normalizer(val_y)
 
 val_rmse = metric.rmse(prediction=val_prediction, target=val_y, threshold=0)
- 
+val_mae = metric.mae(prediction=val_prediction, target=val_y, threshold=0)
 
 
 # # Evaluate
@@ -272,8 +273,10 @@ val_loss = STMeta_obj.load_event_scalar('val_loss')
 
 
 
-print('Val result', val_rmse)
-print('Test result', test_rmse)
+print('Val RMSE', val_rmse)
+print('Test RMSE', test_rmse)
+print('Val MAE', val_mae)
+print('Test MAE', test_mae)
 
 time_consumption = [val_loss[e][0] - val_loss[e-1][0] for e in range(1, len(val_loss))]
 time_consumption = sum([e for e in time_consumption if e < (min(time_consumption) * 10)]) / 3600
@@ -281,6 +284,6 @@ print('Converged using %.2f hour / %s epochs' % (time_consumption, STMeta_obj._g
 
 #senInfo("{},已完成，请尽快查看~".format(code_version))
 
-with open("{}_{}.pkl".format(args['city'],code_version),"wb") as fp:
-    pickle.dump(test_prediction,fp)
+# with open("{}_{}.pkl".format(args['city'],code_version),"wb") as fp:
+#     pickle.dump(test_prediction,fp)
 
