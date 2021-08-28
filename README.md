@@ -6,7 +6,7 @@ This repository provides the data and code for reproducing the experiment result
 
 ## Data
 
-We provide ride-sharing and corresponding POI data in the `data` directory. Move them into the UCTB package data directory to make the `dataloader` can find data files.
+We provide crowd flow and corresponding POI data in the `data` directory. Move them into the UCTB package data directory to make the `dataloader` can find data files. Weather data is stored in 'External' key of the `*.pkl` files.
 
 ## Environment
 
@@ -22,31 +22,50 @@ Experiments require specific dependencies.
 * keras ==2.2.4
 * cuda toolkit==10.0
 
-
-
-## Context Modeling Techniques Impact
+## Exploring the generalizability of different modeling techniques
 
 To analyze context modeling techniques, run the following experiments.
 
-#### Early Jointly Modeling vs. Late Fusion Modeling
+#### Experiments based on STMGCN
+
+In `STCFP_External\Experiments\STMGCN` directory, run the following commands.
 
 ```
-python3 Runner_Early_Modelling.py
+python3 Runner_techniques_analysis_STMGCN.py
 ```
 
-#### Late Fusion Modeling Variants
+#### Experiments based on STMeta
+
+In `STCFP_External\Experiments\STMeta` directory, run the following commands.
 
 ```bash
-python3 Runner_60_External.py
-
-python3 Runner_supplement_external_60.py
+python3 Runner_techniques_analysis_STMeta.py
 ```
 
-## Context Generalization Ability
+## Exploring the generalizability of context features
 
-To exploring the generalization ability of context , run the following experiments.
+To exploring the generalizability of context features, run the following experiments.
+
+#### Experiments based on XGBoost
+
+In `STCFP_External\Experiments\XGBoost` directory, run the following commands.
 
 ```bash
-python3 Runner_ablation.py
+python3 Runner_features_analysis_XGBoost.py
 ```
 
+#### Experiments based on STMGCN
+
+In `STCFP_External\Experiments\ST_MGCN` directory, run the following commands.
+
+```
+python3 Runner_features_analysis_STMGCN.py
+```
+
+#### Experiments based on STMeta
+
+In `STCFP_External\Experiments\ST_MGCN` directory, run the following commands.
+
+```
+python3 Runner_features_analysis_STMeta.py
+```
