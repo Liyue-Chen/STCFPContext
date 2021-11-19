@@ -52,7 +52,7 @@ def stmeta_param_parser():
     parser.add_argument('--external_method', default="not-not-not", type=str)
     parser.add_argument('--external_use', default="weather-holiday-tp", type=str)
     parser.add_argument('--external_lstm_len', default=5, type=int)
-    parser.add_argument('--embedding_dim', default=[10,1,4], type=list)
+    parser.add_argument('--embedding_dim', default=[8,1,8,8], type=str)
     parser.add_argument('--poi_distance', default=5000, type=int)
     return parser
 
@@ -62,6 +62,10 @@ args = vars(parser.parse_args())
 model_dir = os.path.join('model_dir', args['City'])
 code_version = 'ST_MMGCN_{}_K{}L{}_{}_F{}'.format(''.join([e[0] for e in args['Graph'].split('-')]),
                                               args['K'], args['L'], args['CodeVersion'],int(args['MergeIndex']))
+
+if isinstance(args["embedding_dim"],str):
+    args["embedding_dim"] = [int(item) for item in args["embedding_dim"].replace("[","").replace("]","").split(",")]
+print(args["embedding_dim"],type(args["embedding_dim"]))
 
 print("external_method:",args["external_method"])
 print("external_use:",args["external_use"])

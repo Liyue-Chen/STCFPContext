@@ -47,7 +47,7 @@ class ST_MGCN(BaseModel):
                  trend_len,
                  external_lstm_len,
                  external_method="not-not-not",
-                 embedding_dim=[10, 1, 5],
+                 embedding_dim=[8, 1, 8, 8],
                  poi_dim=None,
                  classified_external_feature_dim=[],
                  decay_param=None, **kwargs):
@@ -91,10 +91,15 @@ class ST_MGCN(BaseModel):
         if self.earlyaddFlag:
             print("**** Using Early Add Fusion Modeling techniques ****")
 
-        # embedding size
-        self._embedding_dim = embedding_dim
         # external dimension after one-hot orderd by weather/holiday/temporal position
         self._classified_external_feature_dim = classified_external_feature_dim 
+
+        # embedding size
+        if self._poi_dim is not None and self._poi_dim > 0:
+            self._embedding_dim = embedding_dim
+        else:
+            self._embedding_dim = embedding_dim[:len(classified_external_feature_dim)]
+
 
     def build(self, init_vars=True, max_to_keep=5):
         with self._graph.as_default():
@@ -125,6 +130,7 @@ class ST_MGCN(BaseModel):
             if self._poi_dim is not None and self._poi_dim > 0:
                 poi_feature = tf.placeholder(tf.float32, [None, self._num_node, self._poi_dim])
                 self._input['poi_feature'] = poi_feature.name
+                self._classified_external_feature_dim.append(self._poi_dim)
 
             if self._external_lstm_len is not None and self._external_lstm_len > 0:
                 external_lstm_hidden = tf.placeholder(tf.float32, [None, None, self._external_lstm_len, 1],
@@ -216,13 +222,12 @@ class ST_MGCN(BaseModel):
                         #reshape_size = self._embedding_dim
 
                     elif self.external_method[0] == "multi":
+                        print("classi",self._classified_external_feature_dim)
+                        print("emb",self._embedding_dim)
                         if len(self._classified_external_feature_dim) != len(self._embedding_dim):
                             raise ValueError("external feature dim is not equal to specified embedding_dim, modify `embedding_dim`")
                         else:        
                             print("**** Using classified embedding layers {} >> {} ****".format(self._classified_external_feature_dim, self._embedding_dim))
-                            if self._poi_dim is not None and self._poi_dim > 0:
-                                self._classified_external_feature_dim.append(self._poi_dim)
-                                self._embedding_dim.append(self._poi_dim)
                             embedding_output = []
                             ind = 0
                             for i,tmp in enumerate(self._classified_external_feature_dim):

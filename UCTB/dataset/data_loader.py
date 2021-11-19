@@ -208,11 +208,11 @@ class NodeTrafficLoader(object):
 
         if len(external_feature) > 0:
             external_feature = np.concatenate(external_feature, axis=-1).astype(np.float32)
-            self.external_onehot_dim = external_onehot_dim
             self.external_dim = external_feature.shape[1]
         else:
             external_feature = np.array(external_feature)
             self.external_dim = 0
+        self.external_onehot_dim = external_onehot_dim
 
         self.station_number = self.traffic_data.shape[1]
         
