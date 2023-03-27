@@ -99,7 +99,7 @@ data_loader = NodeTrafficLoader(dataset=args['dataset'], city=args['city'],
                                 external_use=args['external_use'],
                                 MergeIndex=args['MergeIndex'],
                                 poi_distance=args['poi_distance'],
-                                MergeWay="max" if args["dataset"] == "ChargeStation" else "sum")
+                                MergeWay=args["MergeWay"])
 
 
 # split data

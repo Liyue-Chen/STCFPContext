@@ -4,23 +4,48 @@ import os
 # BenchMark Bike Chicago
 #############################################
 
-os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_chicago.data.yml '
-          '-p MergeIndex:2,external_use:weather,batch_size:16,external_method:not-linear-gating,graph:Distance-Correlation-Interaction,mark:gating_V1_wa')
+# os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_chicago.data.yml '
+#           '-p MergeIndex:2,external_use:weather,batch_size:16,external_method:not-linear-gating,graph:Distance-Correlation-Interaction,mark:gating_V1_wa')
+
+# os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_chicago.data.yml '
+#           '-p MergeIndex:2,external_use:holiday,batch_size:16,external_method:not-linear-gating,graph:Distance-Correlation-Interaction,mark:gating_V1_hi')
+
+# os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_chicago.data.yml '
+#           '-p MergeIndex:2,external_use:tp,batch_size:16,external_method:not-linear-gating,graph:Distance-Correlation-Interaction,mark:gating_V1_tp')
+
+# os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_chicago.data.yml '
+#           '-p MergeIndex:2,external_use:weather-holiday,batch_size:16,external_method:not-linear-gating,graph:Distance-Correlation-Interaction,mark:gating_V1_wa_hi')
+
+# os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_chicago.data.yml '
+#           '-p MergeIndex:2,external_use:weather-tp,batch_size:16,external_method:not-linear-gating,graph:Distance-Correlation-Interaction,mark:gating_V1_wa_tp')
+
+# os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_chicago.data.yml '
+#           '-p MergeIndex:2,external_use:holiday-tp,batch_size:16,external_method:not-linear-gating,graph:Distance-Correlation-Interaction,mark:gating_V1_hi_tp')
 
 os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_chicago.data.yml '
-          '-p MergeIndex:2,external_use:holiday,batch_size:16,external_method:not-linear-gating,graph:Distance-Correlation-Interaction,mark:gating_V1_hi')
+          '-p MergeIndex:2,external_use:poi,poi_distance:5000,batch_size:16,external_method:not-linear-gating,graph:Distance-Correlation-Interaction,mark:poi')
 
 os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_chicago.data.yml '
-          '-p MergeIndex:2,external_use:tp,batch_size:16,external_method:not-linear-gating,graph:Distance-Correlation-Interaction,mark:gating_V1_tp')
+          '-p MergeIndex:2,external_use:poi-weather,poi_distance:5000,batch_size:16,external_method:not-linear-gating,graph:Distance-Correlation-Interaction,mark:poi_wea')
 
 os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_chicago.data.yml '
-          '-p MergeIndex:2,external_use:weather-holiday,batch_size:16,external_method:not-linear-gating,graph:Distance-Correlation-Interaction,mark:gating_V1_wa_hi')
+          '-p MergeIndex:2,external_use:poi-holiday,poi_distance:5000,batch_size:16,external_method:not-linear-gating,graph:Distance-Correlation-Interaction,mark:poi_holi')
 
 os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_chicago.data.yml '
-          '-p MergeIndex:2,external_use:weather-tp,batch_size:16,external_method:not-linear-gating,graph:Distance-Correlation-Interaction,mark:gating_V1_wa_tp')
+          '-p MergeIndex:2,external_use:poi-tp,poi_distance:5000,batch_size:16,external_method:not-linear-gating,graph:Distance-Correlation-Interaction,mark:poi_tp')
 
 os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_chicago.data.yml '
-          '-p MergeIndex:2,external_use:holiday-tp,batch_size:16,external_method:not-linear-gating,graph:Distance-Correlation-Interaction,mark:gating_V1_hi_tp')
+          '-p MergeIndex:2,external_use:poi-weather-holiday,poi_distance:5000,batch_size:16,external_method:not-linear-gating,graph:Distance-Correlation-Interaction,mark:poi_wea_holi')
+
+os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_chicago.data.yml '
+          '-p MergeIndex:2,external_use:poi-weather-tp,poi_distance:5000,batch_size:16,external_method:not-linear-gating,graph:Distance-Correlation-Interaction,mark:poi_wea_tp')
+
+os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_chicago.data.yml '
+          '-p MergeIndex:2,external_use:poi-holiday-tp,poi_distance:5000,batch_size:16,external_method:not-linear-gating,graph:Distance-Correlation-Interaction,mark:poi_holi_tp')
+
+os.system('python STMeta_Obj.py -m STMeta_v1.model.yml -d bike_chicago.data.yml '
+          '-p MergeIndex:2,external_use:poi-weather-holiday-tp,poi_distance:5000,batch_size:16,external_method:not-linear-gating,graph:Distance-Correlation-Interaction,mark:poi_wea_holi_tp')
+
 
 
 

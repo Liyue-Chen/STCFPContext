@@ -116,6 +116,8 @@ class NodeTrafficLoader(object):
 
         if type(data_range) is str and data_range.lower().startswith("0."):
             data_range = float(data_range)
+        if type(data_range) is str and data_range.lower().startswith("["):
+            data_range = eval(data_range)
         if type(data_range) is str and data_range.lower() == 'all':
             data_range = [0, len(self.dataset.node_traffic)]
         elif type(data_range) is float:

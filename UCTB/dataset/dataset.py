@@ -84,7 +84,8 @@ class DataSet(object):
             self.data['Grid']['TrafficGrid'] = self.merge_data(self.data['Grid']['TrafficGrid'],"grid")
 
         self.external_feature_weather = self.data['ExternalFeature']['Weather']
-        self.external_feature_weather = self.Sample(self.data['Node']['TrafficNode'], self.external_feature_weather)
+        if len(self.external_feature_weather) > 0:
+            self.external_feature_weather = self.Sample(self.data['Node']['TrafficNode'], self.external_feature_weather)
         self.time_range = self.data['TimeRange']
         self.time_fitness = self.data['TimeFitness']
 
@@ -98,7 +99,10 @@ class DataSet(object):
     def Sample(self, traffic, weather):
         print("Traffic shape is:",traffic.shape)
         print("Weather shape is:",weather.shape)
-        if traffic.shape[0] >= weather.shape[0]:
+        if traffic.shape[0] == weather.shape[0]:
+            new_weather = weather
+            print("dim(weather) equals to dim(traffic).")
+        elif traffic.shape[0] > weather.shape[0]:
             # upSample
             if traffic.shape[0] % weather.shape[0] != 0:
                 raise ValueError("traffic len % weather len is not equal to 0")
@@ -106,7 +110,7 @@ class DataSet(object):
             times = traffic.shape[0] // weather.shape[0]
             for i in range(weather.shape[0]):
                 new_weather[i*times:i*times+times,:] = np.tile(weather[i:i+1],(times,1))
-            print("upSample weather feature")
+            print("upSample weather feature.")
         else:
             # downSample
             if weather.shape[0] % traffic.shape[0]  != 0:
@@ -115,7 +119,7 @@ class DataSet(object):
             times = weather.shape[0] // traffic.shape[0]
             for i in range(traffic.shape[0]):
                 new_weather[i,:] = weather[i*times,:]
-            print("downSample weather feature")
+            print("downSample weather feature.")
         return new_weather
 
     def merge_data(self,data,dataType):

@@ -29,23 +29,48 @@ bike_shared_params_st_mgcn = ('python ST_MGCN_Obj.py '
                          )
 
 # Chicago
-os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
-                                      '  --external_use weather --MergeIndex 2 --CodeVersion gating_wa ')
+# os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
+#                                       '  --external_use weather --MergeIndex 2 --CodeVersion gating_wa ')
+
+# os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
+#                                       '  --external_use holiday --MergeIndex 2 --CodeVersion gating_hi ')
+
+# os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
+#                                       '  --external_use tp --MergeIndex 2 --CodeVersion gating_tp ')
+
+# os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
+#                                       '  --external_use weather-holiday --MergeIndex 2 --CodeVersion gating_wa_hi ')
+
+# os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
+#                                       '  --external_use weather-tp --MergeIndex 2 --CodeVersion gating_wa_tp ')
+
+# os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
+#                                       '  --external_use holiday-tp --MergeIndex 2 --CodeVersion gating_hi_tp ')
 
 os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
-                                      '  --external_use holiday --MergeIndex 2 --CodeVersion gating_hi ')
+                                      '  --external_use poi --poi_distance 5000 --MergeIndex 2 --CodeVersion poi ')
 
 os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
-                                      '  --external_use tp --MergeIndex 2 --CodeVersion gating_tp ')
+                                      '  --external_use poi-weather --poi_distance 5000 --MergeIndex 2 --CodeVersion poi_wea ')
 
 os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
-                                      '  --external_use weather-holiday --MergeIndex 2 --CodeVersion gating_wa_hi ')
+                                      '  --external_use poi-holiday --poi_distance 5000 --MergeIndex 2 --CodeVersion poi_holi ')
 
 os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
-                                      '  --external_use weather-tp --MergeIndex 2 --CodeVersion gating_wa_tp ')
+                                      '  --external_use poi-tp --poi_distance 5000 --MergeIndex 2 --CodeVersion poi_tp ')
 
 os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
-                                      '  --external_use holiday-tp --MergeIndex 2 --CodeVersion gating_hi_tp ')
+                                      '  --external_use poi-weather-holiday --poi_distance 5000 --MergeIndex 2 --CodeVersion poi_wea_holi ')
+
+os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
+                                      '  --external_use poi-weather-tp --poi_distance 5000 --MergeIndex 2 --CodeVersion poi_wea_tp ')
+
+os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
+                                      '  --external_use poi-holiday-tp --poi_distance 5000 --MergeIndex 2 --CodeVersion poi_holi_tp ')
+
+os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
+                                      '  --external_use poi-weather-holiday-tp --poi_distance 5000 --MergeIndex 2 --CodeVersion poi_wea_holi_tp ')
+
 
 
 #############################################

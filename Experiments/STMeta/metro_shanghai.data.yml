@@ -23,6 +23,7 @@ early_stop_length: 300
 early_stop_patience: 0.1
 max_epoch: 1
 batch_size: 32
+MergeWay: sum
 
 group: Shanghai
 mark: BM
