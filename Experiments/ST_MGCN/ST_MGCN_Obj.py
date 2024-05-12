@@ -1,5 +1,4 @@
 import os
-import nni
 import GPUtil
 import numpy as np
 
@@ -7,7 +6,7 @@ from UCTB.dataset import NodeTrafficLoader
 from UCTB.model import ST_MGCN
 from UCTB.evaluation import metric
 from UCTB.preprocess import SplitData
-from UCTB.preprocess.time_utils import is_work_day_china, is_work_day_america
+from UCTB.preprocess.time_utils import is_work_day_china, is_work_day_america, is_work_day_australia
 
 def stmeta_param_parser():
     import argparse
@@ -52,7 +51,8 @@ def stmeta_param_parser():
     parser.add_argument('--external_method', default="not-not-not", type=str)
     parser.add_argument('--external_use', default="weather-holiday-tp", type=str)
     parser.add_argument('--external_lstm_len', default=5, type=int)
-    parser.add_argument('--embedding_dim', default=[8,1,8,8], type=str)
+    parser.add_argument('--spatial_embedding_dim', default="[8, 32, 5, 8]", type=str)
+    parser.add_argument('--temporal_embedding_dim', default="[10,1,5]", type=str)
     parser.add_argument('--poi_distance', default=5000, type=int)
     return parser
 
@@ -63,12 +63,20 @@ model_dir = os.path.join('model_dir', args['City'])
 code_version = 'ST_MMGCN_{}_K{}L{}_{}_F{}'.format(''.join([e[0] for e in args['Graph'].split('-')]),
                                               args['K'], args['L'], args['CodeVersion'],int(args['MergeIndex']))
 
-if isinstance(args["embedding_dim"],str):
-    args["embedding_dim"] = [int(item) for item in args["embedding_dim"].replace("[","").replace("]","").split(",")]
-print(args["embedding_dim"],type(args["embedding_dim"]))
+args["temporal_embedding_dim"] = [int(item) for item in args["temporal_embedding_dim"].replace("[","").replace("]","").split(",")]
+args["spatial_embedding_dim"] = [int(item) for item in args["spatial_embedding_dim"].replace("[","").replace("]","").split(",")]
+print(args["spatial_embedding_dim"],type(args["spatial_embedding_dim"]))
+print(args["temporal_embedding_dim"],type(args["temporal_embedding_dim"]))
 
 print("external_method:",args["external_method"])
 print("external_use:",args["external_use"])
+
+if args['Dataset'] == 'Bike':
+    workday_parse = is_work_day_america
+elif args['Dataset'] == 'Pedestrian':
+    workday_parse = is_work_day_australia
+else:
+    workday_parse = is_work_day_china
 
 # Config data loader
 data_loader = NodeTrafficLoader(dataset=args['Dataset'], city=args['City'],
@@ -86,7 +94,7 @@ data_loader = NodeTrafficLoader(dataset=args['Dataset'], city=args['City'],
                                 normalize=True, 
                                 graph=args['Graph'],
                                 with_lm=True,
-                                workday_parser=is_work_day_america if args['Dataset'] == 'Bike' else is_work_day_china,
+                                workday_parser=workday_parse,
                                 external_use=args['external_use'],
                                 poi_distance=args['poi_distance'],
                                 MergeIndex=args['MergeIndex'],
@@ -96,14 +104,13 @@ data_loader = NodeTrafficLoader(dataset=args['Dataset'], city=args['City'],
 train_closeness, val_closeness = SplitData.split_data(data_loader.train_closeness, [0.9, 0.1])
 train_period, val_period = SplitData.split_data(data_loader.train_period, [0.9, 0.1])
 train_trend, val_trend = SplitData.split_data(data_loader.train_trend, [0.9, 0.1])
-if data_loader.external_dim > 0:
+
+if data_loader.temporal_external_dim > 0:
     train_ef_closeness, val_ef_closeness = SplitData.split_data(data_loader.train_ef_closeness, [0.9, 0.1])
     train_ef_period, val_ef_period= SplitData.split_data(data_loader.train_ef_period, [0.9, 0.1])
     train_ef_trend, val_ef_trend = SplitData.split_data(data_loader.train_ef_trend, [0.9, 0.1])
     train_ef, val_ef = SplitData.split_data(data_loader.train_ef, [0.9, 0.1])
     train_lstm_ef, val_lstm_ef = SplitData.split_data(data_loader.train_lstm_ef, [0.9, 0.1])
-if data_loader.poi_dim is not None and data_loader.poi_dim > 0:
-    train_poi,val_poi = SplitData.split_data(data_loader.poi_feature_train, [0.9, 0.1])
 
 train_y, val_y = SplitData.split_data(data_loader.train_y, [0.9, 0.1])
 
@@ -118,10 +125,24 @@ if len(deviceIDs) == 0:
 else:
     current_device = str(deviceIDs[0])
 
+
+print('Number of training samples', data_loader.train_sequence_len)
+print("Traffic shape is",data_loader.traffic_data.shape)
+print("Temporal context dimension is ",data_loader.temporal_external_dim)
+print("Spatial context dimension is ",data_loader.spatial_external_dim)
+print("Temporal external onehot_dim is",data_loader.temporal_external_onehot_dim)
+print("Spatial external onehot_dim is",data_loader.spatial_external_onehot_dim)
+
+if data_loader.temporal_external_dim > 0:
+    print("train_ef shape is",data_loader.train_ef.shape)
+    print("train_lstm_ef shape is",data_loader.train_lstm_ef.shape)
+    print("train_closeness shape is",data_loader.train_closeness.shape)
+
 ST_MGCN_Obj = ST_MGCN(num_node=data_loader.station_number,
                       T=int(args['CT']) + int(args['PT']) + int(args['TT']),
+                      temporal_external_dim = data_loader.temporal_external_dim,
+                      spatial_external_dim = data_loader.spatial_external_dim,
                       input_dim=1,
-                      external_dim=data_loader.external_dim,
                       closeness_len=int(args['CT']), 
                       period_len=int(args['PT']), 
                       trend_len=int(args['TT']),
@@ -131,14 +152,16 @@ ST_MGCN_Obj = ST_MGCN(num_node=data_loader.station_number,
                       gcl_l=args['L'],
                       lstm_units=args['LSTMUnits'],
                       lstm_layers=args['LSTMLayers'],
-                      lr=args['lr'],
+                      lr=float(args['lr']),
                       code_version=code_version,
                       model_dir=model_dir,
                       gpu_device=current_device,
                       external_method=args['external_method'],
-                      embedding_dim=args['embedding_dim'],
-                      poi_dim=data_loader.poi_dim,
-                      classified_external_feature_dim=data_loader.external_onehot_dim if "multi" in args['external_method'] or args['external_method'] == "lstm" else [])
+                      classified_temporal_feature_dim=data_loader.temporal_external_onehot_dim,
+                      classified_spatial_feature_dim = data_loader.spatial_external_onehot_dim,
+                      temporal_embedding_dim= args['temporal_embedding_dim'],
+                      spatial_embedding_dim = args['spatial_embedding_dim']
+                      )
 
 ST_MGCN_Obj.build()
 
@@ -150,14 +173,14 @@ if args['Train'] == 'True':
     ST_MGCN_Obj.fit(traffic_flow=np.concatenate((np.transpose(data_loader.train_closeness, [0, 2, 1, 3]),
                                                  np.transpose(data_loader.train_period, [0, 2, 1, 3]),
                                                  np.transpose(data_loader.train_trend, [0, 2, 1, 3])), axis=1),
-                    poi_feature = data_loader.poi_feature_train,
-                    external_closeness=data_loader.train_ef_closeness,
-                    external_period=data_loader.train_ef_period,
-                    external_trend=data_loader.train_ef_trend,
-                    external_lstm_hidden=data_loader.train_lstm_ef,
+                    external_closeness=data_loader.train_ef_closeness if data_loader.temporal_external_dim > 0 else None,
+                    external_period=data_loader.train_ef_period if data_loader.temporal_external_dim > 0 else None,
+                    external_trend=data_loader.train_ef_trend if data_loader.temporal_external_dim > 0 else None,
+                    past_temporal_context_for_LSTM=data_loader.train_lstm_ef if data_loader.temporal_external_dim > 0 else None,
+                    temporal_external_feature= data_loader.train_ef if data_loader.temporal_external_dim > 0 else None,
+                    spatial_external_feature = data_loader.spatial_external_feature if data_loader.spatial_external_dim > 0 else None,
                     laplace_matrix=data_loader.LM,
                     target=data_loader.train_y,
-                    external_feature=data_loader.train_ef,
                     output_names=('loss', ),
                     evaluate_loss_name='loss',
                     early_stop_method='t-test',
@@ -174,13 +197,13 @@ ST_MGCN_Obj.load(code_version)
 prediction = ST_MGCN_Obj.predict(traffic_flow=np.concatenate((np.transpose(data_loader.test_closeness, [0, 2, 1, 3]),
                                                               np.transpose(data_loader.test_period, [0, 2, 1, 3]),
                                                               np.transpose(data_loader.test_trend, [0, 2, 1, 3])), axis=1),
-                                 poi_feature=data_loader.poi_feature_test,
-                                 external_closeness=data_loader.test_ef_closeness if data_loader.external_dim > 0 else None,
-                                 external_period=data_loader.test_ef_period if data_loader.external_dim > 0 else None,
-                                 external_trend=data_loader.test_ef_trend if data_loader.external_dim > 0 else None,
-                                 external_lstm_hidden=data_loader.test_lstm_ef if data_loader.external_dim > 0 else None,
+                                 external_closeness=data_loader.test_ef_closeness if data_loader.temporal_external_dim > 0 else None,
+                                 external_period=data_loader.test_ef_period if data_loader.temporal_external_dim > 0 else None,
+                                 external_trend=data_loader.test_ef_trend if data_loader.temporal_external_dim > 0 else None,
+                                 past_temporal_context_for_LSTM=data_loader.test_lstm_ef if data_loader.temporal_external_dim > 0 else None,
                                  laplace_matrix=data_loader.LM,
-                                 external_feature=data_loader.test_ef if data_loader.external_dim > 0 else None,
+                                 temporal_external_feature=data_loader.test_ef if data_loader.temporal_external_dim > 0 else None,
+                                 spatial_external_feature = data_loader.spatial_external_feature if data_loader.spatial_external_dim > 0 else None,
                                  sequence_length=data_loader.test_sequence_len,
                                  output_names=['prediction'],
                                  cache_volume=int(args['BatchSize']))
@@ -197,13 +220,14 @@ test_mae = metric.mae(prediction=data_loader.normalizer.min_max_denormal(predict
 prediction = ST_MGCN_Obj.predict(traffic_flow=np.concatenate((np.transpose(val_closeness, [0, 2, 1, 3]),
                                                              np.transpose(val_period, [0, 2, 1, 3]),
                                                              np.transpose(val_trend, [0, 2, 1, 3])), axis=1),
-                                 poi_feature=val_poi if data_loader.poi_dim is not None and data_loader.poi_dim > 0 else None,
-                                 external_closeness=val_ef_closeness if data_loader.external_dim > 0 else None,
-                                 external_period=val_ef_period if data_loader.external_dim > 0 else None,
-                                 external_trend=val_ef_trend if data_loader.external_dim > 0 else None,
-                                 external_lstm_hidden=val_lstm_ef if data_loader.external_dim > 0 else None,
+                                
+                                 external_closeness=val_ef_closeness if data_loader.temporal_external_dim > 0 else None,
+                                 external_period=val_ef_period if data_loader.temporal_external_dim > 0 else None,
+                                 external_trend=val_ef_trend if data_loader.temporal_external_dim > 0 else None,
+                                 past_temporal_context_for_LSTM=val_lstm_ef if data_loader.temporal_external_dim > 0 else None,
                                  laplace_matrix=data_loader.LM,
-                                 external_feature=val_ef if data_loader.external_dim > 0 else None,
+                                 temporal_external_feature=val_ef if data_loader.temporal_external_dim > 0 else None,
+                                 spatial_external_feature = data_loader.spatial_external_feature if data_loader.spatial_external_dim > 0 else None,
                                  sequence_length=max((len(val_closeness), len(val_period), len(val_trend))),
                                  output_names=['prediction'],
                                  cache_volume=int(args['BatchSize']))

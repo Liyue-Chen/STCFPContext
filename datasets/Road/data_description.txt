@@ -1,0 +1,2 @@
+## for all datasets, we use the following road data
+["residential", "primary", "secondary", "tertiary", "motorway", "trunk"]

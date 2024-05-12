@@ -29,23 +29,23 @@ bike_shared_params_st_mgcn = ('python ST_MGCN_Obj.py '
                          )
 
 # Chicago
-# os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
-#                                       '  --external_use weather --MergeIndex 2 --CodeVersion gating_wa ')
+os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
+                                      '  --external_use weather --MergeIndex 2 --CodeVersion wea ')
 
-# os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
-#                                       '  --external_use holiday --MergeIndex 2 --CodeVersion gating_hi ')
+os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
+                                      '  --external_use holiday --MergeIndex 2 --CodeVersion holi ')
 
-# os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
-#                                       '  --external_use tp --MergeIndex 2 --CodeVersion gating_tp ')
+os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
+                                      '  --external_use tp --MergeIndex 2 --CodeVersion tp ')
 
-# os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
-#                                       '  --external_use weather-holiday --MergeIndex 2 --CodeVersion gating_wa_hi ')
+os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
+                                      '  --external_use weather-holiday --MergeIndex 2 --CodeVersion wea_holi ')
 
-# os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
-#                                       '  --external_use weather-tp --MergeIndex 2 --CodeVersion gating_wa_tp ')
+os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
+                                      '  --external_use weather-tp --MergeIndex 2 --CodeVersion wea_tp ')
 
-# os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
-#                                       '  --external_use holiday-tp --MergeIndex 2 --CodeVersion gating_hi_tp ')
+os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
+                                      '  --external_use holiday-tp --MergeIndex 2 --CodeVersion holi_tp ')
 
 os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-linear-gating '
                                       '  --external_use poi --poi_distance 5000 --MergeIndex 2 --CodeVersion poi ')
@@ -103,46 +103,46 @@ metro_shared_params_st_mgcn = ('python ST_MGCN_Obj.py '
 
 # Shanghai
 os.system(metro_shared_params_st_mgcn + ' --City Shanghai --external_method not-linear-gating '
-                                      ' --external_use weather --MergeIndex 2 --CodeVersion gating_wa ')
+                                      ' --external_use weather --MergeIndex 2 --CodeVersion wea ')
 
 os.system(metro_shared_params_st_mgcn + ' --City Shanghai --external_method not-linear-gating '
-                                      ' --external_use holiday --MergeIndex 2 --CodeVersion gating_hi ')
+                                      ' --external_use holiday --MergeIndex 2 --CodeVersion holi ')
 
 os.system(metro_shared_params_st_mgcn + ' --City Shanghai --external_method not-linear-gating '
-                                      ' --external_use tp --MergeIndex 2 --CodeVersion gating_tp ')
+                                      ' --external_use tp --MergeIndex 2 --CodeVersion tp ')
 
 os.system(metro_shared_params_st_mgcn + ' --City Shanghai --external_method not-linear-gating '
-                                      ' --external_use poi --poi_distance 5000 --MergeIndex 2 --CodeVersion gating_poi ')
+                                      ' --external_use poi --poi_distance 5000 --MergeIndex 2 --CodeVersion poi ')
 
 os.system(metro_shared_params_st_mgcn + ' --City Shanghai --external_method not-linear-gating '
-                                      ' --external_use weather-holiday --MergeIndex 2 --CodeVersion gating_wa_hi ')
+                                      ' --external_use weather-holiday --MergeIndex 2 --CodeVersion wea_holi ')
 
 os.system(metro_shared_params_st_mgcn + ' --City Shanghai --external_method not-linear-gating '
-                                      ' --external_use weather-tp --MergeIndex 2 --CodeVersion gating_wa_tp ')
+                                      ' --external_use weather-tp --MergeIndex 2 --CodeVersion wea_tp ')
 
 os.system(metro_shared_params_st_mgcn + ' --City Shanghai --external_method not-linear-gating '
-                                      ' --external_use holiday-tp --MergeIndex 2 --CodeVersion gating_hi_tp ')
+                                      ' --external_use holiday-tp --MergeIndex 2 --CodeVersion holi_tp ')
 
 os.system(metro_shared_params_st_mgcn + ' --City Shanghai --external_method not-linear-gating '
-                                      ' --external_use poi-weather --poi_distance 5000 --MergeIndex 2 --CodeVersion gating_poi_wa ')
+                                      ' --external_use poi-weather --poi_distance 5000 --MergeIndex 2 --CodeVersion poi_wea ')
 
 os.system(metro_shared_params_st_mgcn + ' --City Shanghai --external_method not-linear-gating '
-                                      ' --external_use poi-holiday --poi_distance 5000 --MergeIndex 2 --CodeVersion gating_poi_hi ')
+                                      ' --external_use poi-holiday --poi_distance 5000 --MergeIndex 2 --CodeVersion poi_holi ')
 
 os.system(metro_shared_params_st_mgcn + ' --City Shanghai --external_method not-linear-gating '
-                                      ' --external_use poi-tp --poi_distance 5000 --MergeIndex 2 --CodeVersion gating_poi_tp ')
+                                      ' --external_use poi-tp --poi_distance 5000 --MergeIndex 2 --CodeVersion poi_tp ')
 
 os.system(metro_shared_params_st_mgcn + ' --City Shanghai --external_method not-linear-gating '
-                                      ' --external_use poi-weather-holiday --poi_distance 5000 --MergeIndex 2 --CodeVersion gating_poi_wa_hi ')
+                                      ' --external_use poi-weather-holiday --poi_distance 5000 --MergeIndex 2 --CodeVersion poi_wea_holi ')
 
 os.system(metro_shared_params_st_mgcn + ' --City Shanghai --external_method not-linear-gating '
-                                      ' --external_use poi-weather-tp --poi_distance 5000 --MergeIndex 2 --CodeVersion gating_poi_wa_tp ')
+                                      ' --external_use poi-weather-tp --poi_distance 5000 --MergeIndex 2 --CodeVersion poi_wea_tp ')
 
 os.system(metro_shared_params_st_mgcn + ' --City Shanghai --external_method not-linear-gating '
-                                      ' --external_use poi-holiday-tp --poi_distance 5000 --MergeIndex 2 --CodeVersion gating_poi_hi_tp ')
+                                      ' --external_use poi-holiday-tp --poi_distance 5000 --MergeIndex 2 --CodeVersion poi_holi_tp ')
 
 os.system(metro_shared_params_st_mgcn + ' --City Shanghai --external_method not-linear-gating '
-                                      ' --external_use poi-weather-holiday-tp --poi_distance 5000 --MergeIndex 2 --CodeVersion gating_poi_wa_hi_tp ')
+                                      ' --external_use poi-weather-holiday-tp --poi_distance 5000 --MergeIndex 2 --CodeVersion poi_wea_holi_tp ')
 
 
 
@@ -179,46 +179,46 @@ cs_shared_params_st_mgcn = ('python ST_MGCN_Obj.py '
 
 # Beijing
 os.system(cs_shared_params_st_mgcn + ' --City Beijing --external_method not-linear-gating '
-                                      ' --external_use weather --MergeIndex 2 --CodeVersion gating_wa ')
+                                      ' --external_use weather --MergeIndex 2 --CodeVersion wea ')
 
 os.system(cs_shared_params_st_mgcn + ' --City Beijing --external_method not-linear-gating '
-                                      ' --external_use holiday --MergeIndex 2 --CodeVersion gating_hi ')
+                                      ' --external_use holiday --MergeIndex 2 --CodeVersion holi ')
 
 os.system(cs_shared_params_st_mgcn + ' --City Beijing --external_method not-linear-gating '
-                                      ' --external_use tp --MergeIndex 2 --CodeVersion gating_tp ')
+                                      ' --external_use tp --MergeIndex 2 --CodeVersion tp ')
 
 os.system(cs_shared_params_st_mgcn + ' --City Beijing --external_method not-linear-gating '
-                                      ' --external_use poi --poi_distance 5000 --MergeIndex 2 --CodeVersion gating_poi ')
+                                      ' --external_use poi --poi_distance 5000 --MergeIndex 2 --CodeVersion poi ')
 
 os.system(cs_shared_params_st_mgcn + ' --City Beijing --external_method not-linear-gating '
-                                      ' --external_use weather-holiday --MergeIndex 2 --CodeVersion gating_wa_hi ')
+                                      ' --external_use weather-holiday --MergeIndex 2 --CodeVersion wea_holi ')
 
 os.system(cs_shared_params_st_mgcn + ' --City Beijing --external_method not-linear-gating '
-                                      ' --external_use weather-tp --MergeIndex 2 --CodeVersion gating_wa_tp ')
+                                      ' --external_use weather-tp --MergeIndex 2 --CodeVersion wea_tp ')
 
 os.system(cs_shared_params_st_mgcn + ' --City Beijing --external_method not-linear-gating '
-                                      ' --external_use holiday-tp --MergeIndex 2 --CodeVersion gating_hi_tp ')
+                                      ' --external_use holiday-tp --MergeIndex 2 --CodeVersion holi_tp ')
 
 os.system(cs_shared_params_st_mgcn + ' --City Beijing --external_method not-linear-gating '
-                                      ' --external_use poi-weather --poi_distance 5000 --MergeIndex 2 --CodeVersion gating_poi_wa ')
+                                      ' --external_use poi-weather --poi_distance 5000 --MergeIndex 2 --CodeVersion poi_wea ')
 
 os.system(cs_shared_params_st_mgcn + ' --City Beijing --external_method not-linear-gating '
-                                      ' --external_use poi-holiday --poi_distance 5000 --MergeIndex 2 --CodeVersion gating_poi_hi ')
+                                      ' --external_use poi-holiday --poi_distance 5000 --MergeIndex 2 --CodeVersion poi_holi ')
 
 os.system(cs_shared_params_st_mgcn + ' --City Beijing --external_method not-linear-gating '
-                                      ' --external_use poi-tp --poi_distance 5000 --MergeIndex 2 --CodeVersion gating_poi_tp ')
+                                      ' --external_use poi-tp --poi_distance 5000 --MergeIndex 2 --CodeVersion poi_tp ')
 
 os.system(cs_shared_params_st_mgcn + ' --City Beijing --external_method not-linear-gating '
-                                      ' --external_use poi-weather-holiday --poi_distance 5000 --MergeIndex 2 --CodeVersion gating_poi_wa_hi ')
+                                      ' --external_use poi-weather-holiday --poi_distance 5000 --MergeIndex 2 --CodeVersion poi_wea_holi ')
 
 os.system(cs_shared_params_st_mgcn + ' --City Beijing --external_method not-linear-gating '
-                                      ' --external_use poi-weather-tp --poi_distance 5000 --MergeIndex 2 --CodeVersion gating_poi_wa_tp ')
+                                      ' --external_use poi-weather-tp --poi_distance 5000 --MergeIndex 2 --CodeVersion poi_wea_tp ')
 
 os.system(cs_shared_params_st_mgcn + ' --City Beijing --external_method not-linear-gating '
-                                      ' --external_use poi-holiday-tp --poi_distance 5000 --MergeIndex 2 --CodeVersion gating_poi_hi_tp ')
+                                      ' --external_use poi-holiday-tp --poi_distance 5000 --MergeIndex 2 --CodeVersion poi_holi_tp ')
 
 os.system(cs_shared_params_st_mgcn + ' --City Beijing --external_method not-linear-gating '
-                                      ' --external_use poi-weather-holiday-tp --poi_distance 5000 --MergeIndex 2 --CodeVersion gating_poi_wa_hi_tp ')
+                                      ' --external_use poi-weather-holiday-tp --poi_distance 5000 --MergeIndex 2 --CodeVersion poi_wea_holi_tp ')
 
 
 

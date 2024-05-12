@@ -56,7 +56,8 @@ class STMeta(BaseModel):
 
     def __init__(self,
                  num_node,
-                 external_dim,
+                 temporal_external_dim, # temporal external feature dimensions
+                 spatial_external_dim, # spatial external feature dimensions
                  closeness_len,
                  period_len,
                  trend_len,
@@ -68,9 +69,9 @@ class STMeta(BaseModel):
                  gcn_layers=1,
                  gclstm_layers=1,
 
-                 # dense units
-                 num_hidden_units=64,
                  # LSTM units
+                 num_hidden_units=64,
+                 # dense units
                  num_dense_units=32,
 
                  # merge parameters
@@ -91,9 +92,11 @@ class STMeta(BaseModel):
                  model_dir='model_dir',
                  gpu_device='0',
                  external_method="not-not-not",
-                 embedding_dim = [10,1,5],
-                 poi_dim = None,
-                 classified_external_feature_dim = [],
+                 temporal_embedding_dim = [10, 1, 5], # dim of multiple embedding layer for temporal features
+                 spatial_embedding_dim = [8, 32, 5, 8], # dim of multiple embedding layer for spatial features
+                 single_embedding_dim = 16, # dim of single embedding layer
+                 classified_temporal_feature_dim = [],
+                 classified_spatial_feature_dim = [],
                  decay_param=None,**kwargs):
         # no direct one_layer classified
         super(STMeta, self).__init__(code_version=code_version, model_dir=model_dir, gpu_device=gpu_device)
@@ -107,8 +110,11 @@ class STMeta(BaseModel):
         self._temporal_merge_gal_num_heads = temporal_merge_gal_num_heads
         self._gclstm_layers = gclstm_layers
         self._num_graph = num_graph
-        self._external_dim = external_dim
-        self._poi_dim = poi_dim
+       
+        self._temporal_external_dim = temporal_external_dim
+        self._spatial_external_dim = spatial_external_dim
+
+
         self._output_activation = output_activation
 
         self._st_method = st_method
@@ -122,6 +128,7 @@ class STMeta(BaseModel):
             self._external_lstm_len = int(external_lstm_len)
         else:
             self._external_lstm_len = None
+
         self._num_hidden_unit = num_hidden_units
         self._num_dense_units = num_dense_units
         self._lr = lr
@@ -132,7 +139,7 @@ class STMeta(BaseModel):
         # external modelling method
         # ordered by 'representation-alignment-fusion' and split by '-'
         # eg. 'lstm-not-add'
-        self.external_method = external_method.lower().split('-')
+        self.external_method = external_method.split('-')
 
         self.earlyconcatFlag = True if len(self.external_method) == 1 and self.external_method[0] == "earlyconcat" else False
         if self.earlyconcatFlag:
@@ -142,65 +149,103 @@ class STMeta(BaseModel):
         if self.earlyaddFlag:
             print("**** Using Early Add Fusion Modeling techniques ****")
 
-        # embedding size
-        self._embedding_dim = embedding_dim
         # external dimension after one-hot orderd by weather/holiday/temporal position
-        self._classified_external_feature_dim = classified_external_feature_dim 
+        self._classified_temporal_feature_dim = classified_temporal_feature_dim 
+
+        # external dimension after one-hot orderd by POIs/spatial position/demographic/road
+        self._classified_spatial_feature_dim = classified_spatial_feature_dim 
+
+        # embedding size
+        self._temporal_embedding_dim = temporal_embedding_dim[:len(self._classified_temporal_feature_dim)]
+        self._spatial_embedding_dim = spatial_embedding_dim[:len(self._classified_spatial_feature_dim)]
+        self._single_embedding_dim = single_embedding_dim
     
     def build(self, init_vars=True, max_to_keep=5):
         with self._graph.as_default():
+            
+            def MLP(hidden_state, input_tensor, activation=None):
+                return tf.keras.layers.Dense(units=hidden_state,kernel_regularizer=tf.keras.regularizers.l2(0.01),bias_regularizer=tf.keras.regularizers.l2(0.01), activation=activation)(input_tensor)
+            
+            def multiple_embedding_layer(input_tensor, feature_dim_list, embedding_dim_list, agg_axis=-1):
+                '''
+                input_tensor: input tensor with shape (batch_size, num_node, 1, feature_dim)
+                feature_dim_list: feature length for each type of context (e.g., [26, 2, 24]), sum(feature_dim_list) = feature_dim
+                embedding_dim_list: embedding dim for each type of context (e.g., [8, 1, 8])
+                agg_axis: axis for concatenation (default: -1)
+                '''
+                output = []
+                ind = 0
+                for i,tmp in enumerate(feature_dim_list):
+                    tensor_slice = tf.strided_slice(input_tensor,[0,0,0,ind],[tf.shape(input_tensor)[0],tf.shape(input_tensor)[1],tf.shape(input_tensor)[2],ind+tmp],[1,1,1,1])
+                    tensor_slice = tf.reshape(tensor_slice,[tf.shape(input_tensor)[0],tf.shape(input_tensor)[1],tf.shape(input_tensor)[2], tmp])
+                    extern_embedding = tf.keras.layers.Dense(units=embedding_dim_list[i],kernel_regularizer=tf.keras.regularizers.l2(0.01),bias_regularizer=tf.keras.regularizers.l2(0.01))(tensor_slice)
+                    output.append(extern_embedding)
+                    ind += tmp
+                return tf.concat(output,axis=agg_axis)
+
+            def attention(inputs, attention_units):    
+                query = tf.keras.layers.Dense(units=attention_units, activation=tf.nn.tanh)(inputs)
+                key = tf.keras.layers.Dense(units=attention_units, activation=tf.nn.tanh)(inputs)
+                value = tf.keras.layers.Dense(units=attention_units, activation=tf.nn.tanh)(inputs)
+
+                d_k = tf.cast(tf.shape(key)[-1], dtype=tf.float32)
+                
+                attention_weights = tf.nn.softmax(tf.divide(tf.matmul(query, key, transpose_b=True), tf.sqrt(d_k)))
+                attention_output = tf.matmul(attention_weights, value)
+                
+                return attention_output
+
             if self.earlyconcatFlag or self.earlyaddFlag:
                 # with shape (slots, feature_dim, C P T len, 1)
-                external_closeness = tf.placeholder(tf.float32, [None, None, self._closeness_len, 1],
-                                                    name='external_closeness')
+                external_closeness = tf.placeholder(tf.float32, [None, self._temporal_external_dim, self._closeness_len, 1], name='external_closeness')
                 self._input['external_closeness'] = external_closeness.name
-                external_period = tf.placeholder(tf.float32, [None, None, self._period_len, 1],
-                                                 name='external_period')
+                external_period = tf.placeholder(tf.float32, [None, self._temporal_external_dim, self._period_len, 1], name='external_period')
                 self._input['external_period'] = external_period.name
-                external_trend = tf.placeholder(tf.float32, [None, None, self._trend_len, 1],
-                                                name='external_trend')
+                external_trend = tf.placeholder(tf.float32, [None, self._temporal_external_dim, self._trend_len, 1], name='external_trend')
                 self._input['external_trend'] = external_trend.name
 
             temporal_features = []
-            external_temporal_features = []
+            external_temporal_features_for_earlyfusion = []
 
             if self._closeness_len is not None and self._closeness_len > 0:
-                closeness_feature = tf.placeholder(tf.float32, [None, None, self._closeness_len, 1],
-                                                   name='closeness_feature')
+                closeness_feature = tf.placeholder(tf.float32, [None, None, self._closeness_len, 1], name='closeness_feature')
                 self._input['closeness_feature'] = closeness_feature.name
                 temporal_features.append([self._closeness_len, closeness_feature, 'closeness_feature'])
                 if self.earlyconcatFlag or self.earlyaddFlag:
-                    # with shape (slots, 1, C P T len, feature_dim)
-                    external_temporal_features.append(tf.transpose(external_closeness,[0,3,2,1]))
+                    external_temporal_features_for_earlyfusion.append(tf.transpose(external_closeness,[0,3,2,1]))  # with shape (time, 1, C/P/T len, feature_dim)
 
             if self._period_len is not None and self._period_len > 0:
-                period_feature = tf.placeholder(tf.float32, [None, None, self._period_len, 1],
-                                                name='period_feature')
+                period_feature = tf.placeholder(tf.float32, [None, None, self._period_len, 1], name='period_feature')
                 self._input['period_feature'] = period_feature.name
                 temporal_features.append([self._period_len, period_feature, 'period_feature'])
                 if self.earlyconcatFlag or self.earlyaddFlag:
-                    external_temporal_features.append(tf.transpose(external_period,[0,3,2,1]))
+                    external_temporal_features_for_earlyfusion.append(tf.transpose(external_period,[0,3,2,1]))
 
             if self._trend_len is not None and self._trend_len > 0:
-                trend_feature = tf.placeholder(tf.float32, [None, None, self._trend_len, 1],
-                                               name='trend_feature')
+                trend_feature = tf.placeholder(tf.float32, [None, None, self._trend_len, 1], name='trend_feature')
                 self._input['trend_feature'] = trend_feature.name
                 temporal_features.append([self._trend_len, trend_feature, 'trend_feature'])
                 if self.earlyconcatFlag or self.earlyaddFlag:
-                    external_temporal_features.append(tf.transpose(external_trend,[0,3,2,1]))
+                    external_temporal_features_for_earlyfusion.append(tf.transpose(external_trend,[0,3,2,1]))
             
-            if self._external_dim is not None and self._external_dim > 0:
-                external_input = tf.placeholder(tf.float32, [None, self._external_dim])
-                self._input['external_feature'] = external_input.name
+            self.temporalFeatureFlag = False
+            self.spatialFeatureFlag = False
 
-            if self._poi_dim is not None and self._poi_dim > 0:
-                poi_feature = tf.placeholder(tf.float32, [None, self._num_node, self._poi_dim])
-                self._input['poi_feature'] = poi_feature.name
+            if self._temporal_external_dim is not None and self._temporal_external_dim > 0:
+                # if exist temporal contextual features
+                self.temporalFeatureFlag = True
+                temporal_external_input = tf.placeholder(tf.float32, [None, self._temporal_external_dim])
+                self._input['temporal_external_feature'] = temporal_external_input.name
+        
+            if self._spatial_external_dim is not None and self._spatial_external_dim > 0:
+                # if exist temporal contextual features
+                self.spatialFeatureFlag = True
+                spatial_external_input = tf.placeholder(tf.float32, [self._num_node, self._spatial_external_dim])
+                self._input['spatial_external_feature'] = spatial_external_input.name
 
-            if self._external_lstm_len is not None and self._external_lstm_len > 0:
-                external_lstm_hidden = tf.placeholder(tf.float32, [None, None, self._external_lstm_len, 1],
-                                               name='external_lstm_hidden')
-                self._input['external_lstm_hidden'] = external_lstm_hidden.name
+            if self._external_lstm_len is not None and self._external_lstm_len > 0: # if use LSTM variant in late fusion
+                past_temporal_context_for_LSTM = tf.placeholder(tf.float32, [None, None, self._external_lstm_len, 1], name='past_temporal_context_for_LSTM')
+                self._input['past_temporal_context_for_LSTM'] = past_temporal_context_for_LSTM.name
 
             if len(temporal_features) > 0:
                 target = tf.placeholder(tf.float32, [None, None, 1], name='target')
@@ -222,21 +267,34 @@ class STMeta(BaseModel):
                         
                         time_step, target_tensor, given_name = temporal_item
 
+                        ####### Early Fusion #######
                         if self.earlyconcatFlag:
-                            after_earlyconcat_dims = 1 + self._external_dim
-
+                            after_earlyconcat_dims = 1
                             #  with shape (slots, 1, C P T len, feature_dim)
-                            external_tile = tf.tile(tf.reshape(external_temporal_features[t_ind], [-1, 1, time_step, self._external_dim]), [1, self._num_node, 1, 1])
+                            if self.temporalFeatureFlag:
+                                early_concat_temporal_embedding_dim = 16
+                                after_earlyconcat_dims += early_concat_temporal_embedding_dim
+                                temporal_context_embedding = MLP(early_concat_temporal_embedding_dim, tf.reshape(external_temporal_features_for_earlyfusion[t_ind], [-1, 1, time_step, self._temporal_external_dim]))
+                                temporal_external_tile = tf.tile(temporal_context_embedding, [1, self._num_node, 1, 1])
+                                target_tensor = tf.concat([target_tensor, temporal_external_tile], axis = -1)
                             
-                            target_tensor = tf.concat([target_tensor, external_tile], axis = -1)
+                            if self.spatialFeatureFlag:
+                                early_concat_spatial_embedding_dim = 16
+                                after_earlyconcat_dims += early_concat_spatial_embedding_dim
+                                spatial_context_embedding = MLP(early_concat_spatial_embedding_dim, tf.reshape(spatial_external_input, [1, self._num_node, 1, self._spatial_external_dim]))
+                                spatial_external_tile = tf.tile(spatial_context_embedding, [tf.shape(target)[0], 1, time_step, 1])
+                                target_tensor = tf.concat([target_tensor,spatial_external_tile], axis = -1)
 
                         if self.earlyaddFlag:
-                            external_componenet = tf.reshape(
-                                external_temporal_features[t_ind], [-1, 1, time_step, self._external_dim])
-                            external_componenet = tf.keras.layers.Dense(units=1, kernel_regularizer=tf.keras.regularizers.l2(
-                                0.01), bias_regularizer=tf.keras.regularizers.l2(0.01), activation=tf.nn.tanh)(external_componenet)
-                            target_tensor = tf.add(
-                                target_tensor, external_componenet)
+                            if self.temporalFeatureFlag:
+                                temporal_context = tf.reshape(external_temporal_features_for_earlyfusion[t_ind], [-1, 1, time_step, self._temporal_external_dim])
+                                temporal_context_embedding = MLP(1, temporal_context, activation=tf.nn.tanh)
+                                target_tensor = tf.add(target_tensor, temporal_context_embedding)
+                            
+                            if self.spatialFeatureFlag:
+                                spatial_context_embedding = MLP(1, spatial_external_input, activation=tf.nn.tanh)
+                                spatial_context_embedding = tf.tile(tf.reshape(spatial_context_embedding, [1, self._num_node, 1, 1]), [1, 1, time_step, 1])
+                                target_tensor = tf.add(target_tensor, spatial_context_embedding)
 
                         if self._st_method == 'GCLSTM':
 
@@ -328,102 +386,179 @@ class STMeta(BaseModel):
 
             dense_inputs = tf.keras.layers.BatchNormalization(axis=-1, name='feature_map')(dense_inputs)
             
-            if len(self.external_method) > 1:
+            #### Late Fusion
+            if not self.earlyconcatFlag and not self.earlyaddFlag:
+                
 
                 if self.external_method[2] == "not":
                     print("**** This model didn't use external features ****")
                 else:
                     print("**** Using Late Fusion Modeling techniques ****")
-                    # representation stage
-                    print("poi_dim",self._poi_dim)
-                    print("external_dim",self._external_dim)
+                    
+                    ############################################################
+                    ### temporal duplication for spatial contex
+                    ############################################################
+                    external_dense = []
+                    if self.temporalFeatureFlag:
+                        ### spatial duplication for temporal context
+                        duplicated_temporal_features = tf.tile(tf.reshape(temporal_external_input, [-1, 1, 1, self._temporal_external_dim]), [1, self._num_node, 1, 1])
+                        external_dense.append(duplicated_temporal_features)
+                    if self.spatialFeatureFlag:
+                        ### temporal duplication for spatial context
+                        duplicated_spatial_features = tf.tile(tf.reshape(spatial_external_input, [1, self._num_node, 1, self._spatial_external_dim]), [tf.shape(dense_inputs)[0], 1, 1, 1])
+                        external_dense.append(duplicated_spatial_features)
 
-                    if self._external_dim is not None and self._external_dim > 0:
-                        external_dense = tf.tile(tf.reshape(external_input, [-1, 1, 1, self._external_dim]), [1, self._num_node, 1, 1])
+                    if len(external_dense) > 1:
+                        external_dense = tf.concat(external_dense, axis=-1)
+                    elif len(external_dense) == 1:
+                        external_dense = external_dense[0]
+                    else:
+                        raise ValueError("No external features are used.")
 
-                    if self._poi_dim is not None and self._poi_dim > 0:
-                        poi_dense = tf.reshape(poi_feature, [-1, self._num_node, 1, self._poi_dim])
-                        # if have external dimention
-                        if self._external_dim is not None and self._external_dim > 0:
-                            external_dense = tf.concat(
-                                [external_dense, poi_dense], axis=-1)
-                            print("Concat POI to External Features {} >> {}".format(self._external_dim,self._external_dim+self._poi_dim))
-                            self._external_dim += self._poi_dim
-                        else:
-                            external_dense = poi_dense
-                            #self._external_dim = self._poi_dim
+                    self._external_dim = self._temporal_external_dim + self._spatial_external_dim
+                   
+                   # external_dense with shape (batch_size, num_node, 1, external_dim)
+                    external_dense = tf.reshape(external_dense, [-1, self._num_node, 1, self._external_dim])
+
+
+                    ####################
+                    ## representation stage
+                    ####################
 
                     if self.external_method[0] == "not":
                         print("**** This model doesn't have representation stage.****")
                         
                     elif self.external_method[0] == "emb":
-                        if isinstance(self._embedding_dim, int):
-                            pass
-                        elif isinstance(self._embedding_dim[0], int):
-                            self._embedding_dim = self._embedding_dim[0]
-                        else:
-                            ValueError(
-                                "using one Embedding layer, the embedding_dim or its first element should be `int` type")
-                        print(
-                            "**** Using one embedding layer >> {} ****".format(self._embedding_dim))
-                        external_dense = tf.keras.layers.Dense(units=self._embedding_dim, kernel_regularizer=tf.keras.regularizers.l2(
-                            0.01), bias_regularizer=tf.keras.regularizers.l2(0.01))(external_dense)
-                        #reshape_size = self._embedding_dim
+                        
+                        print("**** Using one embedding layer >> {} ****".format(self._single_embedding_dim))    
+                        external_dense = tf.keras.layers.Dense(units=self._single_embedding_dim, kernel_regularizer=tf.keras.regularizers.l2(0.01), bias_regularizer=tf.keras.regularizers.l2(0.01))(external_dense)
+                    
 
                     elif self.external_method[0] == "multi":
-                        if len(self._classified_external_feature_dim) != len(self._embedding_dim):
-                            raise ValueError("external feature dim is not equal to specified embedding_dim, modify `embedding_dim`")
-                        else:        
-                            print("**** Using classified embedding layers {} >> {} ****".format(self._classified_external_feature_dim, self._embedding_dim))
-                            if self._poi_dim is not None and self._poi_dim > 0:
-                                self._classified_external_feature_dim.append(self._poi_dim)
-                                self._embedding_dim.append(self._poi_dim)
-                            embedding_output = []
-                            ind = 0
-                            for i,tmp in enumerate(self._classified_external_feature_dim):
-                                tensor_slice = tf.strided_slice(external_dense,[0,0,0,ind],[tf.shape(external_dense)[0],tf.shape(external_dense)[1],tf.shape(external_dense)[2],ind+tmp],[1,1,1,1])
-                                tensor_slice = tf.reshape(tensor_slice,[tf.shape(external_dense)[0],tf.shape(external_dense)[1],tf.shape(external_dense)[2], tmp])
-                                extern_embedding = tf.keras.layers.Dense(units=self._embedding_dim[i],kernel_regularizer=tf.keras.regularizers.l2(0.01),bias_regularizer=tf.keras.regularizers.l2(0.01))(tensor_slice)
-                                embedding_output.append(extern_embedding)
-                                ind += tmp
-                            external_dense = tf.concat(embedding_output,axis=-1)
-                        #reshape_size = np.sum(self._embedding_dim)
+
+                        classified_ST_feature_dim = self._classified_temporal_feature_dim + self._classified_spatial_feature_dim
+                        ST_embedding_dim = self._temporal_embedding_dim + self._spatial_embedding_dim
+                        print("**** Using classified embedding layers {} >> {} ****".format(classified_ST_feature_dim, ST_embedding_dim))
+                        
+                        external_dense = multiple_embedding_layer(external_dense, classified_ST_feature_dim, ST_embedding_dim, agg_axis=-1) # [T, N, 1, D]
+
                             
                     elif self.external_method[0] == "lstm":
-                        context_lstm_hidden = 16
-                        print("**** Using LSTM in Weather features and window size is {}. Mapping {} >> {} ****".format(self._external_lstm_len,self._external_dim,context_lstm_hidden))
-                        cell = tf.keras.layers.LSTMCell(units=context_lstm_hidden)
-                        multi_layer_gru = tf.keras.layers.StackedRNNCells([cell] * 1)
-                        external_dense = tf.keras.layers.RNN(multi_layer_gru)(
-                            tf.reshape(external_lstm_hidden, [-1, self._external_lstm_len, self._external_dim]))
-                        reshape_size = context_lstm_hidden
-                        external_dense = tf.tile(tf.reshape(external_dense, [-1, 1, 1, reshape_size]),[1, self._num_node, 1, 1])
+                        if self.temporalFeatureFlag:
+                            lstm_hidden_for_historial_temporal_context = 16
+                            print("**** Using LSTM for temporal contextual features and their window size is {}. Temporal contextual features dims is {}. LSTM hidden state is {} ****".format(self._external_lstm_len, self._temporal_external_dim, lstm_hidden_for_historial_temporal_context))
+                             # LSTM for temporal external features
+                            cell = tf.keras.layers.LSTMCell(units=lstm_hidden_for_historial_temporal_context)
+                            multi_layer_gru = tf.keras.layers.StackedRNNCells([cell] * 1)
+                            external_dense = tf.keras.layers.RNN(multi_layer_gru)(tf.reshape(past_temporal_context_for_LSTM, [-1, self._external_lstm_len, self._temporal_external_dim]))
+                            external_dense = tf.tile(tf.reshape(external_dense, [-1, 1, 1, lstm_hidden_for_historial_temporal_context]),[1, self._num_node, 1, 1])
+                        
+                        if self.spatialFeatureFlag:
+                            # MLP for spatial external features
+                            embedding_dim_for_spatial_context_in_LSTM = 16
+                            spatial_context_embedding = MLP(embedding_dim_for_spatial_context_in_LSTM, spatial_external_input)
+                            spatial_context_embedding = tf.tile(tf.reshape(spatial_context_embedding, [1, self._num_node, 1, embedding_dim_for_spatial_context_in_LSTM]), [tf.shape(dense_inputs)[0], 1, 1, 1])
+                            external_dense = tf.concat([external_dense, spatial_context_embedding], axis = -1)
 
+
+                    elif self.external_method[0] == "MGate":
+                        classified_ST_feature_dim = self._classified_temporal_feature_dim + self._classified_spatial_feature_dim
+                        print("**** Using multiple linear layers {}, which is prepared for multiple gating. ****".format(classified_ST_feature_dim))
+                        
+                        external_dense = multiple_embedding_layer(external_dense, classified_ST_feature_dim, [dense_inputs.get_shape()[-1].value]*len(classified_ST_feature_dim), agg_axis=-2) # [T, N, num_external_categories, D]
                     else:
                         raise ValueError("The first `external method` parameter is wrong.")
 
-                    # alignment stage
+                    ##################
+                    ## alignment stage
+                    ##################
                     #external_dense = tf.tile(tf.reshape(external_dense, [-1, 1, 1, reshape_size]),[1, tf.shape(dense_inputs)[1], tf.shape(dense_inputs)[2], 1])
                     
                     if self.external_method[1] == "not":
                         print("**** This model doesn't have alignment stage.****")
 
                     elif self.external_method[1] == "linear":
-                        external_dense = tf.keras.layers.Dense(units=dense_inputs.get_shape()[-1].value,activation=None,kernel_regularizer=tf.keras.regularizers.l2(0.01),bias_regularizer=tf.keras.regularizers.l2(0.01))(external_dense)
-                    
+                        external_dense = MLP(dense_inputs.get_shape()[-1], external_dense)
                     else:
                         raise ValueError("The second `external method` parameter is wrong.")
                     
-                    # fusion stage
+                    ##############
+                    ## fusion stage
+                    ##############
                     if self.external_method[2] == "concat":
                         dense_inputs = tf.concat([dense_inputs, external_dense], axis=-1)
 
                     elif self.external_method[2] == "add":
-                        dense_inputs = tf.add(dense_inputs,external_dense)
+                        dense_inputs = tf.add(dense_inputs, external_dense)
 
                     elif self.external_method[2] == "gating":
-                        dense_inputs = tf.multiply(dense_inputs,external_dense)
+                        dense_inputs = tf.multiply(dense_inputs, external_dense)
                     
+                    elif self.external_method[2] == "ResGate":
+                        assert self.external_method[1] == "linear"
+                        gating_output = tf.multiply(dense_inputs, external_dense)
+                        dense_inputs = dense_inputs + gating_output
+                    
+                    elif self.external_method[2] == "GateConcat":
+                        assert self.external_method[1] == "linear"
+                        gating_output = tf.multiply(dense_inputs, external_dense)
+                        dense_inputs = tf.concat([dense_inputs, gating_output], axis=-1)
+                    
+                    elif self.external_method[2] == "GateAttn":
+                        assert self.external_method[1] == "linear"
+                        gating_output = tf.multiply(dense_inputs, external_dense)
+
+                        attn_input = tf.concat([dense_inputs, gating_output], axis=-2) # [T, N, 2, D]
+                        attn_input = tf.reshape(attn_input, [-1, 2, attn_input.get_shape()[-1].value]) # [T*N, 2, D]
+                        
+                        attn_output = attention(attn_input, self._num_hidden_unit//2) # [T*N, 2, D]
+
+                        dense_inputs = tf.reshape(tf.reduce_mean(attn_output, axis=-2, keepdims=True), [-1, self._num_node, 1, attn_output.get_shape()[-1].value])
+
+                    elif self.external_method[2] == "MGateConcat":
+                        assert self.external_method[0] == "MGate"
+                        
+                        gating_output = tf.multiply(dense_inputs, external_dense) # [T, N, num_external_categories, D]                
+                        gating_output = tf.reshape(gating_output, [-1, self._num_node, 1, len(classified_ST_feature_dim) * dense_inputs.get_shape()[-1].value]) # [T, N, 1, num_external_categories*D]
+                        dense_inputs = tf.concat([dense_inputs, gating_output], axis=-1)
+
+                    elif self.external_method[2] == "MGateConcatRes":
+                        assert self.external_method[0] == "MGate"
+                        
+                        gating_output = tf.multiply(dense_inputs, external_dense) # [T, N, num_external_categories, D]                
+                        gating_output = tf.reshape(gating_output, [-1, self._num_node, 1, len(classified_ST_feature_dim) * dense_inputs.get_shape()[-1].value]) # [T, N, 1, num_external_categories*D]
+                        gating_output = MLP(dense_inputs.get_shape()[-1].value, gating_output)
+
+                        dense_inputs = tf.add(dense_inputs, gating_output)
+
+
+                    elif self.external_method[2] == "MGateAttn":
+                        assert self.external_method[0] == "MGate"
+                        
+                        gating_output = tf.multiply(dense_inputs, external_dense) # [T, N, num_external_categories, D]
+                        
+                        attn_input = tf.concat([dense_inputs, gating_output], axis=-2) # [T, N, num_external_categories + 1, D]
+                        attn_input = tf.reshape(attn_input, [-1, 1 + len(classified_ST_feature_dim), dense_inputs.get_shape()[-1].value]) # [T*N, num_external_categories + 1, D]
+                        
+                        attn_output = attention(attn_input, self._num_hidden_unit//2) # [T*N, num_external_categories + 1, D]
+
+                        dense_inputs = tf.reshape(tf.reduce_mean(attn_output, axis=-2, keepdims=True), [-1, self._num_node, 1, self._num_hidden_unit//2])
+
+
+                    elif self.external_method[2] == "MGateAttnRes":
+                        assert self.external_method[0] == "MGate"
+                      
+                        gating_output = tf.multiply(dense_inputs, external_dense) # [T, N, num_external_categories, D]
+                        
+                        attn_input = tf.concat([dense_inputs, gating_output], axis=-2) # [T, N, 1 + num_external_categories, D]
+                        attn_input = tf.reshape(attn_input, [-1, 1 + len(classified_ST_feature_dim), dense_inputs.get_shape()[-1].value]) # [T*N, 1 + num_external_categories, D]
+                        attn_output = attention(attn_input, self._num_hidden_unit//2) # [T*N, 1 + num_external_categories, D]
+
+                        agg_output = MLP(dense_inputs.get_shape()[-1].value, tf.reshape(tf.reduce_mean(attn_output, axis=-2, keepdims=True), [-1, self._num_node, 1, self._num_hidden_unit//2]))
+                        
+                        dense_inputs = tf.add(dense_inputs, agg_output)
+                        
+                
                     else:
                         raise ValueError("The third `external method` parameter is wrong.")
                   
@@ -472,40 +607,40 @@ class STMeta(BaseModel):
             self._op['train_op'] = train_op.name
 
         super(STMeta, self).build(init_vars, max_to_keep)
-
+    
     # Define your '_get_feed_dict function‘, map your input to the tf-model
     def _get_feed_dict(self,
                        laplace_matrix,
                        closeness_feature=None,
                        period_feature=None,
                        trend_feature=None,
-                       external_lstm_hidden=None,
+                       past_temporal_context_for_LSTM=None,
                        external_closeness=None,
                        external_period=None,
                        external_trend=None,
                        target=None,
-                       external_feature=None,
-                       poi_feature=None):
+                       temporal_external_feature=None,
+                       spatial_external_feature=None):
         feed_dict = {
             'laplace_matrix': laplace_matrix,
         }
         if target is not None:
             feed_dict['target'] = target
-        if self._external_dim is not None and self._external_dim > 0:
-            feed_dict['external_feature'] = external_feature
-        if self._poi_dim is not None and self._poi_dim > 0:
-            feed_dict['poi_feature'] = poi_feature
+        if self._temporal_external_dim is not None and self._temporal_external_dim > 0:
+            feed_dict['temporal_external_feature'] = temporal_external_feature
+        if self._spatial_external_dim is not None and self._spatial_external_dim > 0:
+            feed_dict['spatial_external_feature'] = spatial_external_feature
         if self._closeness_len is not None and self._closeness_len > 0:
             feed_dict['closeness_feature'] = closeness_feature
         if self._period_len is not None and self._period_len > 0:
             feed_dict['period_feature'] = period_feature
         if self._trend_len is not None and self._trend_len > 0:
             feed_dict['trend_feature'] = trend_feature
-        if self._external_lstm_len is not None and self._external_lstm_len > 0:
-            feed_dict['external_lstm_hidden'] = external_lstm_hidden
-        if self.earlyconcatFlag or self.earlyaddFlag:
+        if self._external_lstm_len is not None and self._external_lstm_len > 0 and self._temporal_external_dim > 0:
+            feed_dict['past_temporal_context_for_LSTM'] = past_temporal_context_for_LSTM
+        if (self.earlyconcatFlag or self.earlyaddFlag) and self._temporal_external_dim > 0:
             feed_dict['external_closeness'] = external_closeness
             feed_dict['external_period'] = external_period
             feed_dict['external_trend'] = external_trend
-        #print("fd:",feed_dict.keys())
+        # print("fd:",feed_dict.keys())
         return feed_dict

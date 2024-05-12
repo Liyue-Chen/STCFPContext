@@ -1,5 +1,6 @@
 from dateutil.parser import parse
 from chinese_calendar import is_workday
+from workalendar.oceania import Australia
 
 america_public_holiday = ['01-01', '01-02', '01-16', '02-12', '02-13', '02-20', '05-29', '07-04', '09-04',
                           '10-09', '11-10', '11-11', '11-23', '12-25']
@@ -38,6 +39,19 @@ def is_work_day_china(date):
         date = parse(date)
     return is_workday(date)
 
+def is_work_day_australia(date):
+    """
+    Args:
+        date(string or datetime): e.g. 2019-01-01
+
+    Return:
+        True if date is not holiday in Australia,
+        otherwise return False.
+    """
+    if type(date) is str:
+        date = parse(date)
+    cal = Australia()
+    return cal.is_working_day(date)
 
 def is_valid_date(date_str):
     """

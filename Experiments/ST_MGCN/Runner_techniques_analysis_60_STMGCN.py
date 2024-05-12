@@ -30,7 +30,7 @@ bike_shared_params_st_mgcn = ('python ST_MGCN_Obj.py '
                          )
 
 os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-not-not '
-                                      '  --MergeIndex 1 --CodeVersion not_external ')
+                                      '  --MergeIndex 1 --CodeVersion no_context ')
 
 os.system(bike_shared_params_st_mgcn + ' --City Chicago --external_method not-not-concat '
                                       '  --MergeIndex 1 --CodeVersion not_not_concat ')
@@ -105,7 +105,7 @@ metro_shared_params_st_mgcn = ('python ST_MGCN_Obj.py '
                          )
 
 os.system(metro_shared_params_st_mgcn + ' --City Shanghai --external_method not-not-not '
-                                      '  --MergeIndex 1 --CodeVersion not_external ')
+                                      '  --MergeIndex 1 --CodeVersion no_context ')
 
 os.system(metro_shared_params_st_mgcn + ' --City Shanghai --external_method not-not-concat '
                                       '  --MergeIndex 1 --CodeVersion not_not_concat ')
@@ -179,7 +179,7 @@ cs_shared_params_st_mgcn = ('python ST_MGCN_Obj.py '
                          )
 
 os.system(cs_shared_params_st_mgcn + ' --City Beijing --external_method not-not-not '
-                                      '  --MergeIndex 1 --CodeVersion not_external ')
+                                      '  --MergeIndex 1 --CodeVersion no_context ')
 
 os.system(cs_shared_params_st_mgcn + ' --City Beijing --external_method not-not-concat '
                                       '  --MergeIndex 1 --CodeVersion not_not_concat ')

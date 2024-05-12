@@ -1,0 +1,26 @@
+## Chicago demographic data
+Index(['Population Above Poverty', 'Population Below Poverty',
+       'Population With A Ratio Of Income To Poverty Level Below 0.5',
+       'Population With A Ratio Of Income To Poverty Level Between 0.5 And 0.99',
+       'Population Enrolled In College',
+       'Population That Graduated From High School',
+       'Population With A Bachelor's Degree',
+       'Population With A Master's Degree', 'Population With A Doctorate',
+       'TOTAL POPULATION', 'POPULATION DENSITY'])
+
+
+
+## Shanghai demographic data
+Index(['镇', '乡', '街道办事处', '居民委员会', '村民委员会', '行政区划面积', '年末常住人口', '外来人口',
+       '人口密度', '市内迁入', '市外迁入', '迁往市内', '迁往市外', '合计', '17岁及以下', '18～34岁',
+       '35～59岁', '60岁及以上', '出生人数', '已婚育龄妇女人数', '计划生育率', '建筑面积', '居住房屋',
+       '非居住房屋', '城市绿地面积', '公园绿地面积', '公园数', '公园面积', '公园游园人数', '单位数', '从业人员',
+       '工业总产值', '年末资产总计', '主营业务收入', '利润总额', '建筑业企业数', '建筑业年末从业人员', '建筑业总产值',
+       '房屋施工面积', '房屋竣工面积', '住宅房屋', '学校数', '毕业生数', '招生数', '在校学生', '教职员工',
+       '专任教师', '卫生机构数', '床位数', '卫生技术人员', '执业（助理）医师', '注册护士'])
+
+
+## Beijing demographic data
+Index(['街道办事处', '建制镇', '建制乡', '社区居委会', '村民委员会', '常住人口', '常住外来人口', '城镇人口',
+       '乡村人口', '常住人口密度', '出生人数', '死亡人数', '自然增加人数', '出生率', '死亡率', '自然增长率',
+       '建筑施工竣工总面积', '银行系统机构(个)', '银行系统人员(人)', '保险系统机构(个)', '保险系统人员(人)'])

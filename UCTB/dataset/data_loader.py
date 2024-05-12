@@ -13,6 +13,7 @@ from ..preprocess.time_utils import is_work_day_china, is_work_day_america, is_v
 from ..preprocess import MoveSample, SplitData, ST_MoveSample, Normalizer
 from ..model_unit import GraphBuilder
 
+from ..preprocess.preprocessor import *
 from .dataset import DataSet
 from ..utils.encode_onehot import one_hot
 
@@ -83,7 +84,6 @@ class NodeTrafficLoader(object):
                  period_len=7,
                  trend_len=4,
                  external_lstm_len=5,
-                 external_method="not-not-not",
                  target_length=1,
                  poi_distance=1000,
                  graph='Correlation',
@@ -93,7 +93,6 @@ class NodeTrafficLoader(object):
                  normalize=True,
                  workday_parser=is_work_day_america,
                  with_lm=True,
-                 with_tpe=False,
                  data_dir=None,
                  external_use="weather-holiday-tp",
                  MergeIndex=1,
@@ -132,25 +131,29 @@ class NodeTrafficLoader(object):
 
         self.traffic_data = self.dataset.node_traffic[data_range[0]:data_range[1], self.traffic_data_index].astype(
             np.float32)
-
-        # external feature
-        external_feature = []
-        external_onehot_dim = []
-        # weather feature
-        if len(self.dataset.external_feature_weather) > 0 and "weather" in external_use:
-            print("**** Using Weather feature ****")
-            external_feature.append(self.dataset.external_feature_weather[data_range[0]:data_range[1]])
-            external_onehot_dim.append(self.dataset.external_feature_weather.shape[1])
-            print("weather feature:", self.dataset.external_feature_weather.shape)
-
+        
         if dataset == "Metro":
-            print("**** Only use Metro service time and Fitness should be 60mins *****")
+            print("**** In Metro dataset, we only use the data from 5 to 23 o'clock. *****")
             use_index = [] # dailt slot 9
             true_daily_slots = int(self.daily_slots * (4/3))  # 12
             true_hour_slots = 60 / (self.dataset.time_fitness * (3/4))  #0.5
             for i in range(int(num_time_slots // self.daily_slots)):
                 use_index.append(np.arange(int(5*true_hour_slots+i*true_daily_slots),int(23*true_hour_slots+i*true_daily_slots)))
             use_index = np.array(use_index).flatten()
+
+        #######################################################################################
+        ### Loading temporal contextual features, which should be [time_slots, num_features]
+        ### `temporal_external_onehot_dim' records the number of each temporal contexual features
+        #######################################################################################
+        temporal_external_feature = []
+        temporal_external_onehot_dim = []
+
+        # weather feature
+        if "weather" in external_use:
+            print("**** Using Weather feature ****")
+            temporal_external_feature.append(self.dataset.external_feature_weather[data_range[0]:data_range[1]])
+            temporal_external_onehot_dim.append(self.dataset.external_feature_weather.shape[-1])
+            print("weather feature:", self.dataset.external_feature_weather.shape)
 
         # holiday Feature
         if "holiday" in external_use:
@@ -169,9 +172,9 @@ class NodeTrafficLoader(object):
                                 for e in range(data_range[0], num_time_slots + data_range[0])]
                 # one-hot holiday feature                  
                 holiday_feature = one_hot(holiday_feature)
+            temporal_external_feature.append(holiday_feature)
+            temporal_external_onehot_dim.append(holiday_feature.shape[-1])
             print("holiday feature:", holiday_feature.shape)
-            external_feature.append(holiday_feature)
-            external_onehot_dim.append(holiday_feature.shape[1])
 
         if "tp" in external_use:
             print("**** Using temporal position feature ****")
@@ -202,20 +205,25 @@ class NodeTrafficLoader(object):
                 # one-hot DayOfWeek feature   
                 dayofweek_feature = one_hot(dayofweek_feature)
             
-            external_onehot_dim.append(hourofday_feature.shape[1]+dayofweek_feature.shape[1])
-            external_feature.append(hourofday_feature)
-            external_feature.append(dayofweek_feature)
+            temporal_external_onehot_dim.append(hourofday_feature.shape[-1]+dayofweek_feature.shape[-1])
+            temporal_external_feature.append(hourofday_feature)
+            temporal_external_feature.append(dayofweek_feature)
             print("hour of day feature:", hourofday_feature.shape)
             print("day of week feature:", dayofweek_feature.shape)            
 
-        if len(external_feature) > 0:
-            external_feature = np.concatenate(external_feature, axis=-1).astype(np.float32)
-            self.external_dim = external_feature.shape[1]
+        if len(temporal_external_feature) > 0:
+            self.temporal_external_feature = np.concatenate(temporal_external_feature, axis=-1).astype(np.float32)
+            self.temporal_external_dim = self.temporal_external_feature.shape[-1]
         else:
-            external_feature = np.array(external_feature)
-            self.external_dim = 0
-        self.external_onehot_dim = external_onehot_dim
+            self.temporal_external_feature = np.array([])
+            self.temporal_external_dim = 0
+        
+        self.temporal_external_onehot_dim = temporal_external_onehot_dim
 
+
+        ##############################
+        ### Handling crowd flow series
+        ##############################
         self.station_number = self.traffic_data.shape[1]
         
         if test_ratio > 1 or test_ratio < 0:
@@ -223,7 +231,7 @@ class NodeTrafficLoader(object):
         self.train_test_ratio = [1 - test_ratio, test_ratio]
 
         self.train_data, self.test_data = SplitData.split_data(self.traffic_data, self.train_test_ratio)
-        self.train_ef, self.test_ef = SplitData.split_data(external_feature, self.train_test_ratio)
+        self.train_ef, self.test_ef = SplitData.split_data(self.temporal_external_feature, self.train_test_ratio)
 
         # Normalize the traffic data
         if normalize:
@@ -262,24 +270,8 @@ class NodeTrafficLoader(object):
         self.train_sequence_len = max((len(self.train_closeness), len(self.train_period), len(self.train_trend)))
         self.test_sequence_len = max((len(self.test_closeness), len(self.test_period), len(self.test_trend)))
 
-        self.poi_feature_train = None
-        self.poi_feature_test = None
-        self.poi_dim = None
-        if "poi" in external_use:
-            print("**** Using POIs feature ****")
-            store_path = os.path.join(self.dataset.data_dir,"{}_POIs_norm_{}.pkl".format(self.dataset.city,self.poi_distance))
-            with open(store_path,"rb") as fp:
-                poi_feature = pickle.load(fp)
-                poi_feature = poi_feature[self.traffic_data_index]
-            #poi_feature = np.tile(poi_feature[np.newaxis,:],[num_time_slots,1,1])
-            #external_onehot_dim.append(poi_feature.shape[-1])
-            self.poi_feature_train = np.tile(poi_feature[np.newaxis,:],[self.train_sequence_len,1,1])
-            self.poi_feature_test = np.tile(poi_feature[np.newaxis,:],[self.test_sequence_len,1,1])
-            self.poi_dim = poi_feature.shape[-1]
-            print("POIs train shape is:",self.poi_feature_train.shape)
-            print("POIs test shape is:",self.poi_feature_test.shape)
 
-        # init extern obj
+        # process historical external features, output shape is [time_slots, historical_windows_size, num_features]
         self.train_ef_closeness = None
         self.train_ef_period = None
         self.train_ef_trend = None
@@ -288,16 +280,15 @@ class NodeTrafficLoader(object):
         self.test_ef_period = None
         self.test_ef_trend = None
         self.test_lstm_ef = None
-        if len(external_feature) > 0:
-            self.external_move_sample = ST_MoveSample(closeness_len=self.closeness_len,
-                                            period_len=self.period_len,
-                                            trend_len=self.trend_len, target_length=0, daily_slots=self.daily_slots)
+        if len(self.temporal_external_feature) > 0:
+            # for early fusion
+            self.external_move_sample = ST_MoveSample(closeness_len=self.closeness_len, period_len=self.period_len, trend_len=self.trend_len, target_length=0, daily_slots=self.daily_slots)
 
             self.train_ef_closeness, self.train_ef_period, self.train_ef_trend, _ = self.external_move_sample.move_sample(self.train_ef)
 
             self.test_ef_closeness, self.test_ef_period, self.test_ef_trend, _ = self.external_move_sample.move_sample(self.test_ef)
 
-
+            # for LSTM variants in late fusion
             if self.external_lstm_len is not None and self.external_lstm_len > 0:    
                 self.external_move_sample = ST_MoveSample(closeness_len=self.external_lstm_len,period_len=0,trend_len=0, target_length=0, daily_slots=self.daily_slots)
 
@@ -305,60 +296,76 @@ class NodeTrafficLoader(object):
 
                 self.test_lstm_ef, _, _, _ = self.external_move_sample.move_sample(self.test_ef)
 
+            # align sequence length
             self.train_ef = self.train_ef[-self.train_sequence_len - target_length: -target_length]
             self.test_ef = self.test_ef[-self.test_sequence_len - target_length: -target_length]
             
-            # weather
             self.train_lstm_ef = self.train_lstm_ef[-self.train_sequence_len - target_length: -target_length]
             self.test_lstm_ef = self.test_lstm_ef[-self.test_sequence_len - target_length: -target_length]
+
+
+        #######################################################################################
+        ### Loading spatial contextual features, which should be [num_station, num_features]
+        ### `spatial_external_onehot_dim' records the number of each spatial contexual features
+        #######################################################################################
+        spatial_external_feature = []
+        spatial_external_onehot_dim = []
+
+        ##### POI data #####
+        if "poi" in external_use:
+            print("**** Using POIs feature ****")
+            store_path = os.path.join(self.dataset.data_dir,"{}_POIs_norm_{}.pkl".format(self.dataset.city,self.poi_distance))
             
-            # # external feature
-            # self.extern_move_sample = ST_MoveSample(closeness_len= self.closeness_len,
-            #                                     period_len=self.period_len,
-            #                                     trend_len=self.trend_len, target_length=1, daily_slots=self.daily_slots)
+            poi_feature = self.load_spatial_context_from_dir(store_path)
+ 
+            spatial_external_feature.append(poi_feature)
+            spatial_external_onehot_dim.append(poi_feature.shape[-1])   
 
-            # self.train_external, _, _, _ = self.extern_move_sample.move_sample(self.train_ef)
-            # self.test_external, _, _, _ = self.extern_move_sample.move_sample(self.test_ef)
+            print("POIs shape:",poi_feature.shape)
+        
+        ##### Spatial Position #####
+        if "sp" in external_use:
+            print("**** Using Spatial Position feature ****")
+            store_path = os.path.join(self.dataset.data_dir,"{}_SpatialPosition.pkl".format(self.dataset.city))            
+            sp_feature = self.load_spatial_context_from_dir(store_path)
+            
+            spatial_external_feature.append(sp_feature)
+            spatial_external_onehot_dim.append(sp_feature.shape[-1])   
 
-        if with_tpe:
+            print("Spatial Position shape:",sp_feature.shape)
+        
+        ##### Road data #####
+        if "road" in external_use:
+            print("**** Using Road feature ****")
+            store_path = os.path.join(self.dataset.data_dir,"{}_Road_norm.npy".format(self.dataset.city))            
+            road_feature = self.load_spatial_context_from_dir(store_path, data_type="npy")
+            
+            spatial_external_feature.append(road_feature)
+            spatial_external_onehot_dim.append(road_feature.shape[-1])   
 
-            # Time position embedding
-            self.closeness_tpe = np.array(range(1, self.closeness_len + 1), dtype=np.float32)
-            self.period_tpe = np.array(range(1 * int(self.daily_slots),
-                                             self.period_len * int(self.daily_slots) + 1,
-                                             int(self.daily_slots)), dtype=np.float32)
-            self.trend_tpe = np.array(range(1 * int(self.daily_slots) * 7,
-                                            self.trend_len * int(self.daily_slots) * 7 + 1,
-                                            int(self.daily_slots) * 7), dtype=np.float32)
+            print("Road feature shape:", road_feature.shape)
+        
+        ##### Demographic data #####
+        if "demo" in external_use:
+            print("**** Using Demographic feature ****")
+            store_path = os.path.join(self.dataset.data_dir,"{}_Demographic_norm.npy".format(self.dataset.city))            
+            demo_feature = self.load_spatial_context_from_dir(store_path, data_type="npy")
+            
+            spatial_external_feature.append(demo_feature)
+            spatial_external_onehot_dim.append(demo_feature.shape[-1])   
 
-            self.train_closeness_tpe = np.tile(np.reshape(self.closeness_tpe, [1, 1, -1, 1]),
-                                               [len(self.train_closeness), len(self.traffic_data_index), 1, 1])
-            self.train_period_tpe = np.tile(np.reshape(self.period_tpe, [1, 1, -1, 1]),
-                                            [len(self.train_period), len(self.traffic_data_index), 1, 1])
-            self.train_trend_tpe = np.tile(np.reshape(self.trend_tpe, [1, 1, -1, 1]),
-                                           [len(self.train_trend), len(self.traffic_data_index), 1, 1])
+            print("Demographic feature shape:", demo_feature.shape)
 
-            self.test_closeness_tpe = np.tile(np.reshape(self.closeness_tpe, [1, 1, -1, 1]),
-                                              [len(self.test_closeness), len(self.traffic_data_index), 1, 1])
-            self.test_period_tpe = np.tile(np.reshape(self.period_tpe, [1, 1, -1, 1]),
-                                           [len(self.test_period), len(self.traffic_data_index), 1, 1])
-            self.test_trend_tpe = np.tile(np.reshape(self.trend_tpe, [1, 1, -1, 1]),
-                                          [len(self.test_trend), len(self.traffic_data_index), 1, 1])
-
-            self.tpe_dim = self.train_closeness_tpe.shape[-1]
-
-            # concat temporal feature with time position embedding
-            self.train_closeness = np.concatenate((self.train_closeness, self.train_closeness_tpe,), axis=-1)
-            self.train_period = np.concatenate((self.train_period, self.train_period_tpe,), axis=-1)
-            self.train_trend = np.concatenate((self.train_trend, self.train_trend_tpe,), axis=-1)
-
-            self.test_closeness = np.concatenate((self.test_closeness, self.test_closeness_tpe,), axis=-1)
-            self.test_period = np.concatenate((self.test_period, self.test_period_tpe,), axis=-1)
-            self.test_trend = np.concatenate((self.test_trend, self.test_trend_tpe,), axis=-1)
-
+        if len(spatial_external_feature) > 0:
+            self.spatial_external_feature = np.concatenate(spatial_external_feature, axis=-1).astype(np.float32)
+            self.spatial_external_dim = self.spatial_external_feature.shape[-1]  
         else:
+            self.spatial_external_feature = np.array([])
+            self.spatial_external_dim = 0
+        self.spatial_external_onehot_dim = spatial_external_onehot_dim
 
-            self.tpe_dim = None
+
+        self.tpe_dim = None
 
         if with_lm:
             self.AM = []
@@ -375,6 +382,17 @@ class NodeTrafficLoader(object):
                     self.LM.append(LM)
 
             self.LM = np.array(self.LM, dtype=np.float32)
+
+    def load_spatial_context_from_dir(self, data_dir, data_type="pkl"):
+        
+        if data_type == "pkl":
+            with open(data_dir,"rb") as fp:
+                spatial_feature = pickle.load(fp)
+        elif data_type == "npy":
+            spatial_feature = np.load(data_dir)
+       
+        spatial_feature = spatial_feature[self.traffic_data_index]
+        return spatial_feature
 
     def build_graph(self, graph_name):
         AM, LM = None, None
@@ -631,3 +649,49 @@ class TransferDataLoader(object):
                               )[self.sd_loader.traffic_data_index]
 
         return [[e[np.argmax(e)], np.argmax(e), ] for e in cosine_similarity(td_checkin, sd_checkin)]
+
+
+def normalize_dataset(data, normalizer, column_wise=False):
+    if normalizer == 'max01':
+        if column_wise:
+            minimum = data.min(axis=0, keepdims=True)
+            maximum = data.max(axis=0, keepdims=True)
+        else:
+            minimum = data.min()
+            maximum = data.max()
+        scaler = MinMax01Scaler(minimum, maximum)
+        data = scaler.transform(data)
+        print('Normalize the dataset by MinMax01 Normalization')
+    elif normalizer == 'max11':
+        if column_wise:
+            minimum = data.min(axis=0, keepdims=True)
+            maximum = data.max(axis=0, keepdims=True)
+        else:
+            minimum = data.min()
+            maximum = data.max()
+        scaler = MinMax11Scaler(minimum, maximum)
+        data = scaler.transform(data)
+        print('Normalize the dataset by MinMax11 Normalization')
+    elif normalizer == 'std':
+        if column_wise:
+            mean = data.mean(axis=0, keepdims=True)
+            std = data.std(axis=0, keepdims=True)
+        else:
+            mean = data.mean()
+            std = data.std()
+        scaler = StandardScaler(mean, std)
+        data = scaler.transform(data)
+        print('Normalize the dataset by Standard Normalization')
+    elif normalizer == 'None':
+        scaler = NScaler()
+        data = scaler.transform(data)
+        print('Does not normalize the dataset')
+    elif normalizer == 'cmax':
+        #column min max, to be depressed
+        #note: axis must be the spatial dimension, please check !
+        scaler = ColumnMinMaxScaler(data.min(axis=0), data.max(axis=0))
+        data = scaler.transform(data)
+        print('Normalize the dataset by Column Min-Max Normalization')
+    else:
+        raise ValueError
+    return data, scaler
